@@ -1,13 +1,13 @@
 -- 3d sphere v.0.0.1
 	-- produces gradients mapped to the x, y and z axis 
-	-- y rotation, x tilt, z roll
-		-- roll is detached from pitch and yaw - suspect order of operations
+	-- y rotation, x tilt, z roll (original terminology)
+		-- roll is detached from tilt and rotation - suspect order of operations
 function prepare()
 	aspect = OUTPUT_HEIGHT / OUTPUT_WIDTH * 2
 	-- tilt & rotation precalc
 --[[
-	x =x × cos(ß) - y × sin(ß)
-	y= y × cos(ß) + x × sin(ß)
+	x = x × cos(ß) - y × sin(ß)
+	y = y × cos(ß) + x × sin(ß)
 ]]--
 	radius = get_slider_input(RADIUS)
 
