@@ -34,10 +34,10 @@ function prepare()
 	cosa_x = math.cos(tilt)
 	sina_x = math.sin(tilt)
 	
-   roll = math.rad(get_angle_input(ROLL)) 
-   -- z-axis = roll
-   sina_z = math.sin(roll)
-   cosa_z = math.cos(roll)
+	roll = math.rad(get_angle_input(ROLL)) 
+	-- z-axis = roll
+	sina_z = math.sin(roll)
+	cosa_z = math.cos(roll)
 end;
 
 function get_sample(x, y)
@@ -90,16 +90,16 @@ function get_sample(x, y)
 	px = tx
 	py = ty
 
-	h,s,l = fromrgb(px_r,px_g,px_b)
-	if aspect == 1 then h = h * 2 - 1 end
-	x, y = h, py / 2 + 0.5
+	-- h,s,l = fromrgb(px_r,px_g,px_b)
+	-- if aspect == 1 then h = h * 2 - 1 end
+	-- x, y = h, py / 2 + 0.5
 
 	--	input image
 	r, g, b, a = get_sample_map(x, y, SOURCE)
 
-	-- return px,py,pz,a 
+	return px,py,pz,a 
 	-- return r, g, b, a
-	return h, py, 0, a
+	-- return h, py, 0, a
 end;
 
 
