@@ -164,7 +164,7 @@ function get_sample(x, y)
 	if aspect == 1 then h = h * 2 - 1 end
 	x, y = h, py / 2 + 0.5
 
-	--	input image
+	-- input image
 	local r, g, b, a = get_sample_map(x, y, SOURCE)
 	local r3, g3, b3, a3 = get_sample_map(x, y, OVERLAY)
 	
