@@ -202,15 +202,15 @@ function fromrgb(r, g, b)
 	else
 		local d = max - min
 		local s
-	if l > 0.5 then s = d / (2 - max - min) else s = d / (max + min) end
-	if max == r then
-		h = (g - b) / d
-	if g < b then h = h + 6 end
-	elseif max == g then h = (b - r) / d + 2
-	elseif max == b then h = (r - g) / d + 4
+		if l > 0.5 then s = d / (2 - max - min) else s = d / (max + min) end
+		if max == r then
+			h = (g - b) / d
+			if g < b then h = h + 6 end
+		elseif max == g then h = (b - r) / d + 2
+		elseif max == b then h = (r - g) / d + 4
+		end
+		h = h / 6
 	end
-	h = h / 6
- end
 
- return h, s, l or 1
-end;
+	 return h, s, l or 1
+end
