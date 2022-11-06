@@ -213,4 +213,4 @@ function fromrgb(r, g, b)
 	end
 
 	 return h, s, l or 1
-end
+end;
