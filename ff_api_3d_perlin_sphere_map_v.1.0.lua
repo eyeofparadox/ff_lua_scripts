@@ -1,4 +1,4 @@
--- 3d perlin sphere map v.1.0 -- improved perlin noise
+-- 3d perlin sphere map v.1.0.2 -- improved perlin noise
 function prepare()
  -- constants
 	ROUGHNESS_THRESHOLD = 0.00001
@@ -9,12 +9,11 @@ function prepare()
 	details = get_slider_input(DETAILS) * 10 + 0.0001
 	grain = (get_slider_input(GRAIN) * 5) + 0.0001
 	OCTAVES_COUNT = math.floor(details)
-	-- NOISE_SIZE = math.log( get_slider_input(SCALE) + 0.0000000001) 
 	
 -- sphere block
 	radius = get_slider_input(RADIUS)
 
-	-- atmosphere fixed tilt and rotation
+	-- fresnel / atmosphere fixed tilt and rotation -- locked to view. 
 	angle_0 = math.rad(90)
 	cosa_a0 = math.cos(angle_0)
 	sina_a0 = math.sin(angle_0)
@@ -24,6 +23,9 @@ function prepare()
 	sina_t0 = math.sin(tilt_0)
 
 	angle = get_angle_input(ROTATION)
+	if OUTPUT_WIDTH / OUTPUT_HEIGHT == 2 then
+		angle = angle + 180
+	end
 	angle_r = math.rad(angle)
 	angle_g = math.rad(angle + 240)
 	angle_b = math.rad(angle + 120)
@@ -48,21 +50,35 @@ function prepare()
 -- end
 
 -- noise block
-	 --[[
+	--[[
 		https://gist.githubusercontent.com/kymckay/25758d37f8e3872e1636d90ad41fe2ed/raw/1c647169a6729713f8987506b2e5c75a23b14969/perlin.lua
 		Implemented as described here:
 		http://flafla2.github.io/2014/08/09/perlinnoise.html
+			originally an external, FF requires internal script exclusively.
+			block only functions inside prepare(), appended to the end it throws a nil global value 'perlin' error. 
 	]]-- 
 
 	perlin = {}
 	perlin.p = {}
+	-- perlin.offset = {}
+	-- to contain instances of called noise
 
 	math.randomseed(get_intslider_input(SEED))
+	
+	--[[
+		embed in function called for each channel of noise generated. 
+		function get_seed(); needs to provide viable offsets based on seed slider for each call. how is this implemented?
+	]]-- 
 	for i = 0, 255 do
 		perlin.p[i] = math.random(255)
 		perlin.p[256 + i] = perlin.p[i]
 	end
 
+	--[[
+		model already exists for get_perlin_octaves() per loop in get_sample().
+		get_perlin_octaves() can call perlin:noise(); will need revision based on determination of necessary arguments for intended use.
+		x, y, z passthru, q instance variable
+	]]-- 
 	-- return range: [ - 1, 1]
 	function perlin:noise(x, y, z)
 		y = y or 0
@@ -159,42 +175,44 @@ function prepare()
 	function perlin.lerp(t, a, b)
 		return a + t * (b - a)
 	end
+	-- end perlin
+
 
 	-- perlin octaves initialization
 	remainder = details - OCTAVES_COUNT
 	if (remainder > REMAINDER_THRESHOLD) then
 		OCTAVES_COUNT = OCTAVES_COUNT + 1
 	end
+-- end noise block
 	
 
 -- mode block
 		mode = get_intslider_input(MODE)
+	--[[
+		states transferred from checkboxes to mode intslider; flags set as follows:
 		if mode == 1 then
 			sphere = true
 		elseif mode == 2 then
 			sphere = true
-			shaded = true
-			fresnel = true
+			rgban = true
 		elseif mode == 3 then
 			sphere = true
 			shaded = true
 			fresnel = true
-			planet = true
 		elseif mode == 4 then
 			sphere = true
-			vectors = true
+			shaded = true
+			fresnel = true
+			planet = true
 		elseif mode == 5 then
+			sphere = true
+			vectors = true
+		elseif mode == 6 then
 			map = true
 		else
+			map = true
 			rgban = true
 		end
-	--[[
-		...
-	if get_checkbox_input(MODE) then
-		mode = 1
-	else
-		mode = 2
-	end
 	]]--
 -- end
 
@@ -207,12 +225,13 @@ end;
 
 
 function get_sample(x, y)
-	local n, x_ao, sh = 0, 0, 0
+	-- key variables
+	local pr, x_ao, sh = 0, 0, 0
 	local nr, ng, nb, ni = 0, 0, 0, 0
+	local nx_r, nx_g, nx_b, ny_r, ny_g, ny_b, nz_r, nz_g, nz_b = 0, 0, 0, 0, 0, 0, 0, 0, 0 
 	local px, px_p, py_e, px_r, px_g, px_b, py, pz, z_r, z_g, z_b = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-
 	local dr, dg, db, da = 0, 0, 0, 0
-	local dx, dy, dz, dn = 0, 0, 0, 0
+	local dx, dy, dz, da = 0, 0, 0, 0
 	local sx, sy, sz, sa = 0, 0, 0, 0
 	
 	-- image generation
@@ -222,20 +241,20 @@ function get_sample(x, y)
 		px = px / radius
 		py = (y * 2.0) - 1.0
 		py = py / radius
-		px_p = (x*2.0) - 1.0
+		px_p = (x * 2.0) - 1.0
 		px_p = px_p / radius
-		py_e = (y*2.0) - 1.0
+		py_e = (y * 2.0) - 1.0
 		py_e = py_e / radius
-		x_ao = (x*2.0) - 1.0
+		x_ao = (x * 2.0) - 1.0
 		x_ao = x_ao / radius
-		y_to = (y*2.0) - 1.0
+		y_to = (y * 2.0) - 1.0
 		y_to = y_to / radius
-		local len = math.sqrt((px*px)+(py*py))
+		local len = math.sqrt((px * px) + (py * py))
 		if len > 1.0 then return 0,0,0,0 end
 
-		z = -math.sqrt(1.0 - ((px*px)+(py*py)))
-		pz = -math.sqrt(1.0 - ((px_p*px_p)+(py_e*py_e)))
-		z_to = -math.sqrt(1.0 - ((x_ao*x_ao)+(y_to*y_to)))
+		z = -math.sqrt(1.0 - ((px * px) + (py * py)))
+		pz = -math.sqrt(1.0 - ((px_p * px_p) + (py_e * py_e)))
+		z_to = -math.sqrt(1.0 - ((x_ao * x_ao) + (y_to * y_to)))
 
 		local tz = (cosa_t * z) - (sina_t * py)
 		local ty = (sina_t * z) + (cosa_t * py)
@@ -279,22 +298,14 @@ function get_sample(x, y)
 		x_ao = tx_ao
 		z_to = tz_to
 
-	--[[
-		...
-		if mode == 1 then
-			-- ...
-		end
-
-		-- if mode >= 6 then 
-		-- end
-	]]--
+		-- mapping vectors
 		h,s,l = fromrgb(px_r,px_g,px_b)
 		if OUTPUT_HEIGHT / OUTPUT_WIDTH == 2 then h = h * 2 - 1 end
 		x, y = h, py / 2 + 0.5
 	end
 	-- end
 	
-	--	input maps
+	-- input maps
 	roughness = ROUGHNESS_THRESHOLD + 	get_sample_grayscale(x, y, ROUGHNESS) * 
 		(1.0 - ROUGHNESS_THRESHOLD)
 	local contrast = (get_sample_grayscale(x, y, CONTRAST) * 2) - 1
@@ -306,7 +317,7 @@ function get_sample(x, y)
 	local osx, osy, osz, osa = get_sample_map(x, y, OFFSET)
 	local sx, sy, sz, sa = get_sample_map(x, y, SCALE)
 	if sx > 100 then sx = 100 end
-	if sy > 100 then sy= 100 end
+	if sy > 100 then sy = 100 end
 	if sz > 100 then sz = 100 end
 	if sa > 100 then sa = 100 end
 	-- end
@@ -315,16 +326,16 @@ function get_sample(x, y)
 	if mode >= 6 then
 		local x = x * aspect * math.pi
 		local y = y * math.pi
-		nx = math.cos(x) * math.sin(y) * (sx * sa) + osx
-		ny = math.sin(x) * math.sin(y) * (sy * sa) + osy
-		nz = math.cos(y) * (sz * sa) + osz
+		nx = math.cos(x) * math.sin(y)
+		ny = math.sin(x) * math.sin(y)
+		nz = math.cos(y)
 	end
 	-- end
 
 	-- noise generation
-	NOISE_SIZE =  (((sx + sy + sz + sa) * 0.25) ^ 2) 
+	NOISE_SIZE = (((sx + sy + sz + sa) * 0.25) ^ 2) 
 	OCTAVES = {}
-	local cell_size = (0.01 + NOISE_SIZE * 0.99) * grain -- 5
+	local cell_size = (0.01 + NOISE_SIZE * 0.99) * grain
 	local scale = roughness
 	local octave_index
 	for octave_index = 1, OCTAVES_COUNT do
@@ -346,170 +357,164 @@ function get_sample(x, y)
 		NORM_FACTOR = NORM_FACTOR + OCTAVES[octave_index][2] ^ 2
 	end
 	NORM_FACTOR = 1 / math.sqrt(NORM_FACTOR)
+	
 	local octave_index 
+	if mode <= 5 then
+		px_r = px_r * (sx * sa) + osx
+		px_g = px_g * (sx * sa) + osx
+		px_b = px_b * (sx * sa) + osx
+		
+		py = py * (sy * sa) + osy
+		
+		z_r = z_r * (sz * sa) + osz
+		z_g = z_g * (sz * sa) + osz
+		z_b = z_b * (sz * sa) + osz
+	else
+		nx = nx * (sx * sa) + osx
+		ny = ny * (sy * sa) + osy
+		nz = nz * (sz * sa) + osz
+		
+		nx_r = nx + 1
+		ny_r = ny + 1
+		nz_r = nz + 1
+		
+		nx_g = nx + 2
+		ny_g = ny + 2
+		nz_g =  nz + 2
+		
+		nx_b = nx + 3
+		ny_b = ny + 3
+		nz_b = nz + 3
+	end
 	for octave_index = 1, OCTAVES_COUNT do
 		local size = OCTAVES[octave_index][1]
 		local opacity = OCTAVES[octave_index][2]
-		ni = math.log(octave_index) % 1
-		da = dx + dy + dz * 0.333333333
 		if mode <= 5 then
-			px = px * (sx * sa) + osx
-			px_r = px_r * (sx * sa) + osx
-			px_g = px_g * (sx * sa) + osx
-			px_b = px_b * (sx * sa) + osx
-			py = py * (sy * sa) + osy
-			pz = pz * (sz * sa) + osz
-			z_r = z_r * (sz * sa) + osz
-			z_g = z_g * (sz * sa) + osz
-			z_b = z_b * (sz * sa) + osz
-
-			dn = dn + (opacity * perlin:noise((px * size) - ni, (py * size) + (ni * 0.5), ((z * size)+ni)))* da
-			dr = dr + (opacity * perlin:noise(px_r * size, py * size, ((z_r * size) + ni))) * dx
-			dg = dg + (opacity * perlin:noise(((px_g * size) + ni), py * size, (z_g*size)))* dy
-			db = db + (opacity * perlin:noise(px_b * size, ((py * size) + ni), (z_b * size))) * dz
-			n = n + opacity * perlin:noise((px * size)+ni, (py * size) + da, (z * size) - ni)
-			nr = nr + opacity * perlin:noise((px_r * size) + ni, (py * size) + angle_r, z_r * size + dr)
-			ng = ng + opacity * perlin:noise(px_g * size + dg, (py * size) + ni, (z_g * size) + angle_g)
-			nb = nb + opacity * perlin:noise((px_b * size) + angle_b, py * size + db, (z_b * size) + ni)
-		elseif mode >= 6 then
-			--[[
-				this mode eclipses the spherical modes, so angle input can be used to vary noise by channel. 
-				advise users that rgb noise is dependant on rotation value.
-			]]--
-			dn = dn + (opacity * perlin:noise((nx * size) - ni,(ny * size) + (ni * 0.5),((nz * size) + ni))) * da
-			dr = dr + (opacity * perlin:noise(nx * size,ny * size,((nz * size) + ni))) * dx
-			dg = dg + (opacity * perlin:noise(((nx * size) + ni),ny * size,nz * size)) * dy
-			db = db + (opacity * perlin:noise(nx * size,((ny * size) + ni),nz * size)) * dz
-			n = n + opacity * perlin:noise((nx * size) + ni, (ny * size) + da, (nz * size) - ni)
-			nr = nr + (opacity * perlin:noise((nx * size) + ni, (ny * size) + angle_r, nz * size + dr))
-			ng = ng + (opacity * perlin:noise(nx * size + dg, (ny * size) + ni, (nz * size) + angle_g))
-			nb = nb + (opacity * perlin:noise((nx * size) + angle_b, ny * size + db, (nz * size) + ni))
+			dr = dr + (opacity * perlin:noise(px_r * size, py * size, z_r * size)) * dx
+			dg = dg + (opacity * perlin:noise(px_g * size, py * size, z_g * size)) * dy
+			db = db + (opacity * perlin:noise(px_b * size, py * size, z_b * size)) * dz
+			
+			nr = nr + opacity * perlin:noise(px_r * size , py * size, z_r * size + dr)
+			ng = ng + opacity * perlin:noise(px_g * size + dg, py * size, z_g * size)
+			nb = nb + opacity * perlin:noise(px_b * size, py * size + db, z_b * size)
 		else	
-			local z = octave_index
-			n = n + opacity * perlin:noise(x * size, y * size, z * size)
+			-- dr = dr + (opacity * perlin:noise(nx * size,ny * size, nz * size)) * dx
+			-- dg = dg + (opacity * perlin:noise(nx * size,ny * size, nz * size)) * dy
+			-- db = db + (opacity * perlin:noise(nx * size, ny * size, nz * size)) * dz
+
+			dr = dr + (opacity * perlin:noise(nx_r * size,ny_r * size, nz_r * size)) * dx
+			dg = dg + (opacity * perlin:noise(nx_g * size,ny_g * size, nz_g * size)) * dy
+			db = db + (opacity * perlin:noise(nx_b * size, ny_b * size, nz_b * size)) * dz
+
+			-- nr = nr + (opacity * perlin:noise(nx * size, ny * size, nz * size )+ dr)
+			-- ng = ng + (opacity * perlin:noise(nx * size, ny* size, nz * size) + dg)
+			-- nb = nb + (opacity * perlin:noise(nx * size, ny * size, nz * size) + db)
+			
+			nr = nr + (opacity * perlin:noise(nx_r * size,ny_r * size, nz_r * size )+ dr)
+			ng = ng + (opacity * perlin:noise(nx_g * size,ny_g * size, nz_g * size) + dg)
+			nb = nb + (opacity * perlin:noise(nx_b * size, ny_b * size, nz_b * size) + db)
 		end
 	end
-	n = (n + 1.0) * 0.5
+
+	-- contrast adjustments
 	nr = (nr + 1.0) * 0.5
 	ng = (ng + 1.0) * 0.5
 	nb = (nb + 1.0) * 0.5
-	n = truncate(factor * (n - 0.5) + 0.5)
 	nr = truncate(factor * (nr - 0.5) + 0.5)
 	ng = truncate(factor * (ng - 0.5) + 0.5)
 	nb = truncate(factor * (nb - 0.5) + 0.5)
+
+	-- input curves
+	pr = nr
+	pr = get_sample_curve(x, y, pr, PROFILE)
+	nr = get_sample_curve(x, y, nr, PROFILE)
+	ng = get_sample_curve(x, y, ng, PROFILE)
+	nb = get_sample_curve(x, y, nb, PROFILE)
 	f = 1 - (x_ao * 0.8)
 	f = get_sample_curve(x, y, f, FRESNEL)
-	sh = px_p
+	sh = px_p / 2 + 0.5
 	sh = get_sample_curve(px_p, py_e, sh, PROFILE)
 	atm = f - ((1 - sh) ^ 2)
-	--	input curves
-		-- replicate for r, g, b, a
---[[
-	input maps have different roles depending on mode. 
-		-- fresnel / atmosphere is locked to view. 
-			PROFILE applied to px_p for shadow sharpness.
-			FRESNEL applied to OVERLAY for halo curve. 
-]]--
-		if mode == 1 then
-			sphere = true
-			n = get_sample_curve(x, y, n, PROFILE)
-			-- blends forground HIGH and background LOW
-			r, g, b, a = blend_normal(r2, g2, b2, a2, r1, g1, b1, a1, n, hdr)
-			return r, g, b, a 
-			-- return x_ao, x_ao, x_ao, 1
-			-- return f, f, f, 1
-		elseif mode == 2 then
-			sphere = true
-			n = get_sample_curve(x, y, n, PROFILE)
-			rgban = true
-			nr = get_sample_curve(x, y, nr, PROFILE)
-			ng = get_sample_curve(x, y, ng, PROFILE)
-			nb = get_sample_curve(x, y, nb, PROFILE)
-			return nr, ng, nb, 1
-		elseif mode == 3 then
-			sphere = true
-			n = get_sample_curve(x, y, n, PROFILE)
-			r, g, b, a = blend_normal(r2, g2, b2, a2, r1, g1, b1, a1, n, hdr)
-			shaded = true
+
+	-- return conditions - input maps have different roles depending on mode. 
+	if mode == 1 then
+		-- sphere = true
+		-- blends forground HIGH and background LOW
+		r, g, b, a = blend_normal(r2, g2, b2, a2, r1, g1, b1, a1, pr, hdr)
+		return r, g, b, a
+	elseif mode == 2 then
+		-- sphere = true
+		-- rgban = true
+		return nr, ng, nb, 1
+	elseif mode == 3 then
+		-- sphere = true
+		r, g, b, a = blend_normal(r2, g2, b2, a2, r1, g1, b1, a1, pr, hdr)
 		-- blends in shadow overlay
-			r, g, b, a = blend_multiply(r, g, b, a, sh, sh, sh, 1, 1, hdr)
+		-- PROFILE applied to sh to control shadow sharpness.
+		r, g, b, a = blend_multiply(r, g, b, a, sh, sh, sh, 1, 1, hdr)
 		-- blends in lighting overlay
-			r, g, b, a = blend_linear_dodge(r, g, b, a, sh, sh, sh, 0.5, 1, hdr)
-			-- r, g, b, a = blend_screen(r, g, b, a, sh, sh, sh, 0.5, 1)
-			fresnel = true
+		-- r, g, b, a = blend_linear_dodge(r, g, b, a, sh, sh, sh, 0.5, 1, hdr)
+		r, g, b, a = blend_screen(r, g, b, a, sh, sh, sh, 0.5, 1)
+		-- fresnel = true
 		-- blends in color fresnel overlay
-			r, g, b, a = blend_normal(r, g, b, a, r3, g3, b3, a3, atm, hdr)
-			-- r, g, b, a = blend_linear_dodge(r, g, b, a, r3, g3, b3, a3, atm, hdr)
-			-- r, g, b, a = blend_screen(r, g, b, a, r3, g3, b3, a3, atm)
-			return r, g, b, a 
-		elseif mode == 4 then
-			sphere = true
-			planet = true
-			-- blends clouds HIGH and surface LOW plus shaded with atmosphere in color fresnel overlay
-			-- r, g, b, a = blend_linear_light(r2, g2, b2, a2, r1, g1, b1, a1, n)
-			r, g, b, a = blend_normal(r2, g2, b2, a2, r1, g1, b1, a1, 1, hdr)
-			shaded = true
+		r, g, b, a = blend_normal(r, g, b, a, r3, g3, b3, a3, atm, hdr)
+		return r, g, b, a 
+	elseif mode == 4 then
+		-- sphere = true
+		-- planet = true
+		-- blends clouds HIGH and surface LOW plus shaded with atmosphere in color fresnel overlay
+		r, g, b, a = blend_normal(r2, g2, b2, a2, r1, g1, b1, a1, 1, hdr)
+		-- shaded = true
 		-- blends in shadow overlay
-			r, g, b, a = blend_multiply(r, g, b, a, sh, sh, sh, 1 - (sh * sh), 1, hdr)
+		r, g, b, a = blend_multiply(r, g, b, a, sh, sh, sh, 1, 1, hdr)
 		-- blends in lighting overlay
-			-- r, g, b, a = blend_linear_dodge(r, g, b, a, sh, sh, sh, 0.5, 1, hdr)
-			r, g, b, a = blend_screen(r, g, b, a, sh, sh, sh, 0.5, 1)
-			-- r, g, b, a = blend_overlay(r, g, b, a, sh, sh, sh, 0.5, 1)
-			fresnel = true
-			r, g, b, a = blend_normal(r, g, b, a, r3, g3, b3, a3, atm, hdr)
-			return r, g, b, a 
-		elseif mode == 5 then
-			sphere = true
-			vectors = true
+		r, g, b, a = blend_linear_dodge(r, g, b, a, sh, sh, sh, 0.5, 1, hdr)
+		-- fresnel = true
+		r, g, b, a = blend_normal(r, g, b, a, r3, g3, b3, a3, atm, hdr)
+		return r, g, b, a 
+	elseif mode == 5 then
+		-- sphere = true
+		-- vectors = true
 		-- vectors ignores map inputs 
-			return h, py, px_p, 1 
-		elseif mode == 6 then
-			map = true
-			-- blends forground HIGH and background LOW
-			n = get_sample_curve(x, y, n, PROFILE)
-			r, g, b, a = blend_normal(r2, g2, b2, a2, r1, g1, b1, a1, n, hdr)
-			return r, g, b, a 
-		else
-			map = true
-			n = get_sample_curve(x, y, n, PROFILE)
-			rgban = true
-			nr = get_sample_curve(x, y, nr, PROFILE)
-			ng = get_sample_curve(x, y, ng, PROFILE)
-			nb = get_sample_curve(x, y, nb, PROFILE)
-			return nr, ng, nb, 1
-		end
-	-- debug
-		-- return n, n, n, 1
-		-- return angle_r, angle_g, angle_b, 1
-		-- return dx, dy, dz, 1
-		-- return dr, dg, db, 1
-		-- return ni, ni, ni, 1
+		return h, py, px_p, 1 
+	elseif mode == 6 then
+		map = true
+		-- blends forground HIGH and background LOW
+		r, g, b, a = blend_normal(r2, g2, b2, a2, r1, g1, b1, a1, pr, hdr)
+		return r, g, b, a 
+	else
+		-- map = true
+		-- rgban = true
+		return nr, ng, nb, 1
+	end
+-- debug
 end;
 
 
 function fromrgb(r, g, b)
-	 local max, min = math.max(r, g, b), math.min(r, g, b)
-	 local h, s, l
+	local max, min = math.max(r, g, b), math.min(r, g, b)
+	local h, s, l
 
-	 l = (max + min) / 2
+	l = (max + min) / 2
 
-	 if max == min then
-		 h, s = 0, 0 -- achromatic
-	 else
-		 local d = max - min
-		 local s
-	 if l > 0.5 then s = d / (2 - max - min) else s = d / (max + min) end
-	 if max == r then
-		 h = (g - b) / d
-	 if g < b then h = h + 6 end
-	 elseif max == g then h = (b - r) / d + 2
-	 elseif max == b then h = (r - g) / d + 4
-	 end
-	 h = h / 6
- end
+	if max == min then
+		h, s = 0, 0 -- achromatic
+	else
+		local d = max - min
+		local s
+		if l > 0.5 then s = d / (2 - max - min) else s = d / (max + min) end
+		if max == r then
+			h = (g - b) / d
+			if g < b then h = h + 6 end
+		elseif max == g then h = (b - r) / d + 2
+		elseif max == b then h = (r - g) / d + 4
+		end
+		h = h / 6
+	end
 
  return h, s, l or 1
 end
+
 
 function truncate(value)
 	if value <= 0 then value = 0 end

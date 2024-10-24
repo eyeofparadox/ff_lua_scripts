@@ -1,0 +1,338 @@
+Spherical Coordinate System
+
+Spherical coordinates (r, θ, φ) as commonly used in physics (ISO 80000-2:2019 convention): radial distance r (distance to origin), polar angle θ (theta) (angle with respect to polar axis), and azimuthal angle φ (phi) (angle of rotation from the initial meridian plane).
+
+Spherical coordinates (r, θ, φ) as often used in mathematics: radial distance r, azimuthal angle θ, and polar angle φ. The meanings of θ and φ have been swapped compared to the physics convention. As in physics, ρ (rho) is often used instead of r, to avoid confusion with the value r in cylindrical and 2D polar coordinates.
+
+In mathematics, a spherical coordinate system is a coordinate system for three-dimensional space where the position of a point is specified by three numbers: the radial distance of that point from a fixed origin, its polar angle measured from a fixed zenith direction, and the azimuthal angle of its orthogonal projection on a reference plane that passes through the origin and is orthogonal to the zenith, measured from a fixed reference direction on that plane. It can be seen as the three-dimensional version of the polar coordinate system.
+
+The radial distance is also called the radius or radial coordinate. The polar angle may be called colatitude, zenith angle, normal angle, or inclination angle.
+
+When radius is fixed, the two angular coordinates make a coordinate system on the sphere sometimes called spherical polar coordinates.
+
+The use of symbols and the order of the coordinates differs among sources and disciplines. This article will use the ISO convention[1] frequently encountered in physics: (r,θ ,φ) gives the radial distance, polar angle, and azimuthal angle. By contrast, in many mathematics books, (ρ ,θ ,φ)} or (r,θ ,φ) gives the radial distance, azimuthal angle, and polar angle, switching the meanings of θ and φ. Other conventions are also used, such as r for radius from the z-axis, so great care needs to be taken to check the meaning of the symbols.
+
+According to the conventions of geographical coordinate systems, positions are measured by latitude, longitude, and height (altitude). There are a number of celestial coordinate systems based on different fundamental planes and with different terms for the various coordinates. The spherical coordinate systems used in mathematics normally use radians rather than degrees and measure the azimuthal angle counterclockwise from the x-axis to the y-axis rather than clockwise from north (0°) to east (+90°) like the horizontal coordinate system.[2] The polar angle is often replaced by the elevation angle measured from the reference plane towards the positive Z axis, so that the elevation angle of zero is at the horizon; the depression angle is the negative of the elevation angle.
+
+The spherical coordinate system generalizes the two-dimensional polar coordinate system. It can also be extended to higher-dimensional spaces and is then referred to as a hyperspherical coordinate system.
+
+Definition
+To define a spherical coordinate system, one must choose two orthogonal directions, the zenith and the azimuth reference, and an origin point in space. These choices determine a reference plane that contains the origin and is perpendicular to the zenith. The spherical coordinates of a point P are then defined as follows:
+
+The radius or radial distance is the Euclidean distance from the origin O to P.
+The azimuth (or azimuthal angle) is the signed angle measured from the azimuth reference direction to the orthogonal projection of the line segment OP on the reference plane.
+The inclination (or polar angle) is the angle between the zenith direction and the line segment OP.
+The sign of the azimuth is determined by choosing what is a positive sense of turning about the zenith. This choice is arbitrary, and is part of the coordinate system's definition.
+
+The elevation angle is the signed angle between the reference plane and the line segment OP, where positive angles are oriented towards the zenith. Equivalently, it is 90 degrees (π/2 radians) minus the inclination angle.
+
+If the inclination is zero or 180 degrees (π radians), the azimuth is arbitrary. If the radius is zero, both azimuth and inclination are arbitrary.
+
+In linear algebra, the vector from the origin O to the point P is often called the position vector of P.
+
+Conventions
+Several different conventions exist for representing the three coordinates, and for the order in which they should be written. The use of (r,θ ,φ) to denote radial distance, inclination (or elevation), and azimuth, respectively, is common practice in physics, and is specified by ISO standard 80000-2:2019, and earlier in ISO 31-11 (1992).
+
+This article, as stated above, will use the ISO convention: (r,θ ,φ)} gives the radial distance, polar angle, and azimuthal angle.
+
+However, some authors (including mathematicians) use ρ for radial distance, φ for inclination (or elevation) and θ for azimuth, and r for radius from the z-axis, which "provides a logical extension of the usual polar coordinates notation".[3] Some authors may also list the azimuth before the inclination (or elevation). Some combinations of these choices result in a left-handed coordinate system. The standard convention (r,θ ,φ) conflicts with the usual notation for two-dimensional polar coordinates and three-dimensional cylindrical coordinates, where θ is often used for the azimuth.[3]
+
+The angles are typically measured in degrees (°) or radians (rad), where 360° = 2π rad. Degrees are most common in geography, astronomy, and engineering, whereas radians are commonly used in mathematics and theoretical physics. The unit for radial distance is usually determined by the context.
+
+When the system is used for physical three-space, it is customary to use positive sign for azimuth angles that are measured in the counter-clockwise sense from the reference direction on the reference plane, as seen from the zenith side of the plane. This convention is used, in particular, for geographical coordinates, where the "zenith" direction is north and positive azimuth (longitude) angles are measured eastwards from some prime meridian.
+
+
+Spherical Polar Coordinates
+Any spherical coordinate triplet (r, θ, φ)(r,θ ,φ) specifies a single point of three-dimensional space. 
+
+Unique coordinates
+Any spherical coordinate triplet (r,θ ,φ) specifies a single point of three-dimensional space. On the other hand, every point has infinitely many equivalent spherical coordinates. One can add or subtract any number of full turns to either angular measure without changing the angles themselves, and therefore without changing the point. It is also convenient, in many contexts, to allow negative radial distances, with the convention that (-r,-θ ,φ)} is equivalent to (r,θ ,φ) for any r, θ, and φ. Moreover,  (r,-θ ,φ)} is equivalent to (r,θ ,φ +180°).
+
+If it is necessary to define a unique set of spherical coordinates for each point, one must restrict their ranges. A common choice is
+
+radial distance: r ≥ 0,
+polar angle: 0° ≤ θ ≤ 180° (π rad),
+azimuth : 0° ≤ φ < 360° (2π rad).
+
+However, the azimuth φ is often restricted to the interval (−180°, +180°], or (−π, +π] in radians, instead of [0, 360°). This is the standard convention for geographic longitude.
+
+For the polar angle θ, the range [0°, 180°] for inclination is equivalent to [−90°, +90°] for elevation. In geography, the latitude is the elevation.
+
+Even with these restrictions, if polar angle is 0° or 180° (elevation is 90° or −90°) then the azimuth angle is arbitrary; and if r is zero, both azimuth and polar angle are arbitrary. To make the coordinates unique, one can use the convention that in these cases the arbitrary coordinates are set to zero.
+
+Plotting
+To plot a dot from its spherical coordinates (r, θ, φ), where θ is inclination, move r units from the origin in the zenith direction, rotate by θ about the origin towards the azimuth reference direction, and rotate by φ about the zenith in the proper direction.
+
+What is the r in spherical polar coordinates?
+In spherical polar coordinates, the coordinates are r,θ,φ, where r is the distance from the origin, θ is the angle from the polar direction (on the Earth, colatitude, which is 90°- latitude), and φ the azimuthal angle (longitude).  
+
+ρ (rho) is often used instead of r
+
+Phi (uppercase Φ, lowercase φ) is the 21st letter of the Modern Greek alphabet. In the Greek number system, it was taken as the symbol of 500. In math, the lowercase letter phi (φ) is used to indicate the golden ratio. The lowercase letter is also used as a symbol in many areas such as physics, art, architecture, probability theory, philosophy, cartography, ecology, psychology, and chemistry. Besides, the capital letter (Φ) is used in mathematics, statistics, electrical engineering, etc.
+
+In number theory, the Greek letter phi is used as a symbol for Euler's totient function. The lowercase letter phi (φ) is also used to indicate wave functions, the magnetic flux in physics, the cyclotomic polynomial functions, and homomorphisms in algebra, an angle and the Veblen function in mathematics. The fugacity coefficient is represented by a lowercase phi in thermodynamics. And bank angle is also denoted by this greek letter in flight mechanics. Porosity or void fraction used in multiple fields is represented by the letter phi. The uppercase letter phi is used to indicate the magnetic flux and electric flux in electromagnetism. In addition, La France insoumise, a left-wing political party in France, also uses this greek letter as its logo.
+
+What is the difference between Φ and φ?
+It's variant: there are two forms for phi, for instance. The command Φ chooses the one more commonly used in the US, whereas φ prints the “open” one, more commonly used in continental Europe.
+
+What is this Φ?
+Phi is an irrational mathematical constant, approximately 1.618.., and is often denoted by the Greek letter φ. Other commonly used names for Phi are: Golden Mean, Extreme and Mean Ratio, Divine Proportion and Golden Ratio.
+
+
+There are several Greek characters that have different letter forms
+
+epsilon: ε or ϵ
+θ: θ or ϑ
+kappa: κ or ϰ
+pi: π or ϖ
+rho: ρ or ϱ
+sigma: σ or ς
+phi: φ or ϕ
+
+
+Delta -- in Geometry and Angles
+Δ, δ
+In the field of geometry, lower-case delta (δ) may be representative of an angle in any geometric shape. This is primarily because geometry has its roots in Euclid’s work of ancient Greece. Consequently, mathematicians marked their angles with Greek letters.
+
+
+
+Sun Elevation and Moon Phase
+
+Sun position
+altitude: sun altitude above the horizon in radians, e.g. 0 at the horizon and PI/2 at the zenith (straight over your head)
+azimuth: sun azimuth in radians (direction along the horizon, measured from south to west), e.g. 0 is south and Math.PI * 3/4 is northwest
+
+How to define the Sun position in the sky?
+We can express the Sun's location in the sky using two values, imaging it travels on a sphere's surface. Unlike a flat Cartesian plane, it's more convenient to use angles instead of x- and y-coordinates. The most common way to tell someone the Sun's position is to give its elevation and azimuth angles, which closely relate to spherical coordinates. 
+
+The elevation (α alpha) measures the Sun's height relative to the horizon line. It ranges from -90° to 90°. The positive values denote the Sun is above the horizon, while negative ones mean it's below. The Sun reaches the maximal angle in the zenith – directly above your head.
+
+The azimuth (β beta) tells you how much you should turn clockwise to look directly at the Sun. The reference direction is usually north, and the azimuth angle spans 0° and 360°. Following this convention, the most common bearings are North (0°), East (90°), South (180°), and West (270°).
+
+The formulas for solar elevation and azimuth angles - Computing the Sun's location
+You can work out the elevation (φα) and azimuth (φβ) angles by hand using the following equations:
+
+Elevation (φα):
+φα = sin^(-1) [sinφsinδ + cosφcosδcosγ]
+
+Azimuth (φβ):
+φβ =
+{
+cos^(-1) [sinφcosφ - cosφsinφcosφcosφ],
+if φ < 0°
+360° - cos^(-1) [sinφcosφ - cosφsinφcosφcosφ],
+if φ ≥ 0°
+}
+
+where:
+φδ - Declination angle;
+φϕ - Latitude; and
+φγ - Local hour angle.
+
+Please note that the characters "^" represent superscripts in the equations.
+Declination
+The declination is an angle between a vertical line set at the equator and the line connecting Earth's and Sun's centers. Due to Earth's tilt, it varies from -23.45° (at December's solstice) to 23.45° (at June's solstice) and depends on the year's day.
+
+The Declination of a celestial body is its angular distance North or South of the Celestial Equator.  The declination of the Sun changes from 23.5o North to 23.5o South and back again during the course of a year.  Declination can be summarized as the celestial equivalent of Latitude since it is the angular distance of a celestial body North or South of the Celestial Equator.
+
+The elevation angle equals:
+
+α = sin−1[sinδ sinϕ + cosδ cosϕ cosγ].
+
+The azimuth angle equals:
+
+β = cos−1[(sinδ cosϕ−cosδ sinϕ cosγ) / cosα],
+
+for negative γ or 360°-β for positive γ.
+
+
+Spherical Coordinates Calculator
+Created by Bogna Szyk
+
+The spherical coordinates calculator is a tool that converts between rectangular and spherical coordinate systems. It describes the position of a point in a three-dimensional space, similarly to our cylindrical coordinates calculator. For a two-dimensional space, instead of using this Cartesian to spherical converter, you should head to the polar coordinates calculator.
+
+
+Rectangular and Spherical Coordinates
+Spherical coordinates
+Source: Wikimedia
+Coordinates are sets of values that describe the position of any given point in space. For a three-dimensional space, you need precisely three coordinates to define a point uniquely.
+
+The Cartesian system, also known as the rectangular coordinate system, is constructed by drawing three lines in space. They all cross a common point, called the origin, and are perpendicular to one another. These lines are called the axes of the system. Each pair of axes defines a plane: these are called the XY, XZ, and YZ planes. The coordinates of any arbitrary point are defined as the distance between that point and the planes.
+
+We define the spherical coordinate system by a fixed origin and a zenith direction. The zenith is an imaginary point located directly above the origin. The direction from the origin to the zenith is called the zenith direction.
+
+Each arbitrary point in space has three spherical coordinates. The first one, called radial distance or radius (r), is simply the three-dimensional distance between the origin and this point. The second one - the polar angle (theta) - is the angle from the zenith direction to the line that connects the point with the origin. The third one is called the azimuth angle (φ).
+
+When you create a reference plane that passes through the origin and is orthogonal to the zenith, then φ is the angle between the point's orthogonal projection to the plane and a fixed reference direction on that plane.
+
+Converting Cartesian to spherical
+When converting from the rectangular to the spherical system, our spherical coordinate calculator assumes that the origins of both systems overlap. It also assumes that the z-axis is equivalent to the zenith direction. The spherical reference plane coincides with the XY plane.
+
+You should use the following formulas for the conversion:
+
+r = √(x² + y² + z²);
+
+θ = arccos(z/r);
+
+φ = arctan(y/x),
+
+where:
+
+(x, y, z) - Cartesian coordinates; and (r, θ, φ) - Spherical coordinates.
+
+Converting spherical to Cartesian
+The spherical coordinates calculator is also able to recalculate the spherical coordinates into rectangular ones. It uses the following equations:
+
+x = r × sin θ × cos φ;
+
+y = r × sin θ × sin φ;
+
+z = r × cos θ.
+
+Don't forget to check our other coordinate geometry calculators like the average rate of change calculator.
+
+Bogna Szyk
+
+
+Moon position
+altitude: moon altitude above the horizon in radians
+azimuth: moon azimuth in radians
+distance: distance to moon in kilometers
+parallacticAngle: parallactic angle of the moon in radians
+
+Moon illumination
+fraction: illuminated fraction of the moon; varies from 0.0 (new moon) to 1.0 (full moon)
+phase: moon phase; varies from 0.0 to 1.0, described below
+angle: midpoint angle in radians of the illuminated limb of the moon reckoned eastward from the north point of the disk; the moon is waxing if the angle is negative, and waning if positive
+
+Moon phase value should be interpreted like this:
+
+Phase	Name
+0	New Moon
+Waxing Crescent
+0.25	First Quarter
+Waxing Gibbous
+0.5	Full Moon
+Waning Gibbous
+0.75	Last Quarter
+Waning Crescent
+
+By subtracting the parallacticAngle from the angle one can get the zenith angle of the moons bright limb (anticlockwise). The zenith angle can be used do draw the moon shape from the observers perspective (e.g. moon lying on its back).
+
+
+
+Altitude & Azimuth
+Horizontal coordinates
+A, azimuth
+a, altitude
+   
+Also known as: elevation
+Written and fact-checked by 
+Last Updated: Article History
+Related Topics: reference frame azimuth solar elevation angle altitude bearing
+Altitude and azimuth, in astronomy, gunnery, navigation, and other fields, two coordinates describing the position of an object above Earth. Altitude in this sense is expressed as angular elevation (up to 90°) above the horizon. Azimuth is the number of degrees clockwise from due north (usually) to the object’s vertical circle (i.e., A great circle through the object and the zenith). When used as a celestial coordinate, the azimuth is the horizontal direction of a star or other astronomical object in the sky. The star is the point of interest, the reference plane is the local area (e.g. a circular area with a 5 km radius at sea level) around an observer on Earth's surface, and the reference vector points to true north. The azimuth is the angle between the north vector and the star's vector on the horizontal plane.[2]
+
+Azimuth is usually measured in degrees (°). 
+
+What are the symbols for azimuth altitude?
+General Angles
+Angular Measure	Symbol	Range and Sign Convention
+altitude angle	α (alpha)	0° to + 90°; horizontal is zero (east > north relative)
+azimuth angle	γ (gamma)	0° to + 360°; clockwise from North origin
+azimuth (alternate)	γ (gamma)	0° to ±180°; zero (origin) faces the equator, East is + ive, West is - ive
+
+Is azimuth vertical or horizontal?
+horizontal
+The term azimuth is commonly found in reference to “the horizon” or “the horizontal” whereas the term elevation commonly refers to “the vertical”. 
+file:///C:/Users/david/OneDrive/Pictures/Resources/Azimuth-Altitude_schematic.svg
+
+Equatorial	Center of the Earth (geocentric), or Sun (heliocentric)	Celestial equator	Celestial poles	Declination (δ)	Right ascension (α)
+or hour angle (h)
+https://en.wikipedia.org/wiki/Astronomical_coordinate_systems
+
+Equatorial coordinates
+α, right ascension
+δ, declination
+h, hour angle
+
+Earth-Sun Angles
+Angular Measure	Symbol
+latitude	Φ (phi)
+longitude	λ (lambda)
+declination	δ (delta)
+hour angle	ω (omega)
+
+What is the symbol for latitude and longitude?
+Latitude and Longitude
+Calculations often represent angles by small letters of the Greek alphabet, and that way latitude will be represented by λ (lambda, Greek L), and longitude by φ (phi, Greek F). Here is how they are defined. PLEASE NOTE: Charts used in ocean navigation often use the OPPOSITE notation--λ for LONGITUDE and φ for LATITUDE.
+
+What is the difference between declination and right ascension?
+Declination (green) is measured in degrees north and south of the celestial equator. Right ascension, akin to longitude, is measured east from the equinox. The red circle is the Sun's apparent path around the sky, which defines the ecliptic.Feb 26, 2019
+
+Declination Angle
+It is the angle made between the ray of the Sun, extended to the centre of the Earth, and the equatorial plane of the Earth. Whenever the rays of Sun reaches to the centre of the Earth via Northern hemisphere, the declination angle becomes positive and whenever it reaches from the Southern hemisphere, it becomes negative.
+
+In the summer solstice, the value of solar declination angle is marked as +23.5 degrees and during the winter solstice, it is marked as -23.5 degrees. Hence the solar declination angle varies from -23.5 < d < 23.5 degrees.
+
+The declination angle can be calculated as: sinδ(delta) = 0.39795. cos[0.98563 * (N - 173)]
+N is the number of days since January 1
+
+
+What is the solar altitude angle and solar azimuth angle?
+Solar altitude angle (h): the angle between the horizontal and the line to the Sun (0° ≤ h ≤ 90°). The complement of this angle is the zenith angle (θz), that is defined by the vertical and the line to the Sun (i.e., the angle of incidence of beam radiation on a horizontal surface).
+
+Solar Zenith Angle
+Symbol: α
+The solar zenith angle is the zenith angle of the sun, i.e., the angle between the sun’s rays and the vertical direction. It is the complement to the solar altitude or solar elevation, which is the altitude angle or elevation angle between the sun’s rays and a horizontal plane.[1][2] At solar noon, the zenith angle is at a minimum and is equal to latitude minus solar declination angle. This is the basis by which ancient mariners navigated the oceans.
+
+Zenith in astronomy terms means the point in sky which is exactly above you, no matter wherever you stand on the Earth. Keeping that in mind, the zenith angle becomes an angle between the zenith and the Sun. It works complementary with the elevation angle, in which angular motion is calculated between the horizon and the Sun. As mentioned earlier these two angles work in a complementary manner, hence cosine of the one equals the sine of the other.
+
+Solar zenith angle is normally used in combination with the solar azimuth angle to determine the position of the Sun as observed from a given location on the surface of the Earth.
+
+Formula
+
+cos θ_s = sin alpha_s = sin phi Φ sin delta + cos phi Φ cos delta cos h 
+	{\displaystyle \cos θ _s=\sin α _s=\sin Φ \sin δ +\cos Φ \cos δ \cos h}
+where
+
+θ _s is the solar zenith angle
+α _s is the solar altitude angle, α _s = 90° − θ _s
+
+h is the hour angle, in the local solar time.
+δ  is the current declination of the Sun
+ΦΦ  is the local latitude.
+
+
+
+Greek alphabet letters & symbols
+Greek alphabet letters are used as math and science symbols.
+
+Greek alphabet list
+Upper Case Letter	Lower Case Letter	Greek Letter Name	English Equivalent	Letter Name Pronounce
+Α			α				Alpha		a				
+Β				β				Beta			b				
+Γ				γ				Gamma	g				
+Δ				δ				Delta			d				
+Ε				ε				Epsilon		e				
+Ζ				ζ				Zeta			z				
+Η			η				Eta				h				
+Θ			θ				θ					th				
+Ι				ι				Iota			i				
+Κ				κ				Kappa		k				
+Λ				λ				Lambda	l				
+Μ			μ				Mu				m				
+Ν			ν				Nu				n				
+Ξ				ξ				Xi				x				
+Ο			ο				Omicron	o				
+Π			π				Pi				p				
+Ρ				ρ				Rho			r				
+Σ				σ,ς *		Sigma		s				
+Τ				τ				Tau			t				
+Υ				υ				Upsilon	u				
+Φ			φ			Phi				ph				
+Χ				χ				Chi				ch				
+Ψ			ψ			Psi				ps				
+Ω			ω			Omega		o				
+* Second lower case sigma letter is used in word final position.
+
+

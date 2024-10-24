@@ -1,0 +1,11 @@
+-- diffustion limited aggregation
+
+-- set max tree array length equal to a percentage of width times height
+-- initial seed is walker stuck at center (other initialization options worth exploring)
+-- when a walker connects with tree, it becomes stuck and moves from walker array  to tree array
+-- seed walkers from a radius at increasing distance from center to corner -- optionally by random angle 
+-- walkers move according to random vector2d
+-- seed with a random probability of appearing in any given frame -- increase radius after every sweep
+-- seed walkers while tree.length is less than max tree length
+-- reflect walkers that cross the seed radius back inward
+-- scale walkers proportionately according to the order in which they get stuck, with a standard radius in walk mode
