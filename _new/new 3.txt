@@ -1,0 +1,131 @@
+While I digest all of that, can you proof this summary of my study of noise generation? I have so many notes and transcripts, it's handy to have a synopsis of the core elements any new noise algorithms need to address.:
+
+Octaves
+Octaves are a method of adding depth (or texture) to a noise space. The effect is achieved by layering a base noise layer with its doubling frequencies (octaves) and halving amplitudes with each layer. Then, all layers are added up, and the amplitude is normalized.
+	
+On  Each Iteration
+	frequency = FREQUENCY -- increases [typically by factor of 2.0]
+	amplitude = AMPLITUDE -- decreases [typically by factor of 0.5]
+	persistence = PERSISTENCE -- rate amplitude decreases per octave
+	lacunarity = LACUNARITY -- rate frequency increases per octave
+	
+		Changing these values can drastically change the look of the terrain. . Increasing the number of octaves increases the detail. Higher lacunarity increases detail at the cost of smooth terrain, and higher persistence increases the influence of the detail at the cost of smooth terrain. Change the constants to get a different result.
+		
+		Conventionally, the frequency increases exponentially and the amplitude decreases exponentially. If you decrease amplitude linearly, then there might be too much influence on detail, causing large spikes. Also, if you increase frequency linearly, then similar frequencies will add up, causing the same high hills and valleys.
+		
+		In addition to this we'll usually have persistence and lacunarity parameters, determining how the amplitude should diminish and frequency increase as we drop down the octaves. 
+
+Code Example
+–––
+	local octaves = 4
+	local v, i = 0, 0
+	local frequency = 1
+	local amplitude = 1
+	local lacunarity = 2
+	local persistence = 0.5
+	for i = 0; i < octaves do
+	    v = v + get_perlin_noise(x, y, z, frequency) * amplitude
+		-- add octave blending logic
+	    frequency = frequency *lacunarity
+	    amplitude = amplitude * persistence
+	end
+–––
+
+in Filter Forge
+	roughness = ROUGHNESS -- Roughness defines the relative transparency of the octaves the noise is composed of (the number of octaves is controlled by the Details parameter). Roughness of 0 sets all octaves but the first to zero transparency, which is equivalent to setting the Details parameter to 0. Low roughness, approximately 0 to 30, results in smoother noise because large-grained octaves have the greatest visibility. Higher roughness values increase the visibility of smaller-grained octaves, making the noise rougher. 
+	contrast = CONTRAST -- The contrast adjustment is applied to the noise after all the octaves have been summed together but before the colors have been applied, so the colors are not distorted. It is recommended to set Contrast to 0 when using Noise components for height maps, because high contrast values can lead to clamping artifacts. 
+	scale = SCALE -- Adjusts the noise scale with respect to the canvas. The resulting scale is also affected by the global parameter Size. A new parameter that is used for domain offsetting using internal noise and a color map input.
+	offset = OFFSET -- A new parameter that is used for domain offsetting using internal noise and a color map input. Accepts HDR color and drives XYZ displacement with RGB values. Responds to positive and negative values. 
+	distortion = DISTORTION -- A new parameter that is used for domain warping using internal noise and a color map input. Accepts HDR color and drives XYZ distortion with RGB values. Bi-directional by default, it also responds to positive and negative values. 
+	details = DETAILS -- Details sets the number of octaves the noise is composed of. Details of 0 means one octave, 20 means 3 octaves and 100 means 11 octaves. Values such as 27 mean that first three octaves have full visibility, and the fourth one has 70% visibility. Details has no effect when Roughness is set to 0.
+	seed = SEED -- Technically known as Variation, this provides a random seed, affects the random aspects of the component which cannot be controlled directly: it randomizes the location of the noise feature points (or 'lumps') and their maximum lightness. The randomization is also affected by the global Variation value. 
+
+
+For Reference: Perlin Noise
+–––––––––––––––––––
+Algorithm
+Perlin noise is most commonly used in two, three, or even four dimensions , it can be defined for any number of dimensions. The algorithm is broken down into three steps:
+	• grid definition with random gradient vectors;
+	• calculation of the scalar product between the gradient vector and the distance vector;
+	• interpolation between these values.
+
+[•] Grid Definition
+Define an n-dimensional grid. At each point of the grid (node), assign a random gradient vector of unit length and dimension n .
+
+For a two-dimensional grid, each node will be assigned a random vector from the unit circle, and so on for higher dimensions. The one-dimensional case is an exception: the gradient is a random scalar between -1 and 1.
+
+Computing (pseudo)random gradients in one and two dimensions is trivial using a random number generator . For higher dimensions, a Monte Carlo approach can be used where random Cartesian coordinates are chosen from a unit cube, points outside the unit sphere are rejected, and the remaining points are normalized.
+
+[•] Dot product
+Given a point in n-dimensional space to be fed to the noise function, the next step in the algorithm is to determine in which grid cell the given point falls. For each vertex node in that cell, compute the distance vector between the point and the vertex node. Then compute the dot product between the gradient vector at the node and the distance vector.
+
+For a point in a two-dimensional grid, this will require the computation of 4 distance vectors and 4 dot products, while in three dimensions, 8 distance vectors and 8 dot products are required. This leads to the complexity scale `O(2^n)`.
+
+[•] Interpolation
+The last step is the interpolation between the `2^n` dot products computed at the nodes of the cell containing the argument point. This causes the noise function to return 0 when evaluated on the grid nodes themselves.
+
+Interpolation is performed using a function whose first derivative (and possibly second derivative ) is zero at 2^n grid nodes. This has the effect that the gradient of the resulting noise function at each grid node coincides with the pre-computed random gradient vector. If `n = 1`, an example of a function that interpolates between the value `a_0` at grid node 0 and the value`a_1` at grid node `1` is:
+	–––
+		`ƒ(x) = a_0 + smoothstep(x) * (a_1 - a_0) for 0 < x < 1`
+	–––
+	Where the smoothstep  function was used.
+
+Noise functions used in computer graphics typically produce values ​​in the range [-1.0,1.0]. In order to produce Perlin noise in this range, the interpolated value may need to be scaled by a scale factor .
+
+Pseudo-Code Example (2D Perlin Noise)
+–––
+	Gradient = {} -- Normally followed by table initialization
+	
+	--  Function to transition smoothly from 0.0 to 1.0 in the range [0.0, 1.0]
+	 function smoothstep(w)
+		 if (w <= 0.0) return 0.0
+		 if (w >= 1.0) return 1.0
+		 return w * w * (3.0 - 2.0 * w)
+	end
+	
+	--  Function to interpolate smoothly between a0 and a1
+	 function interpolate(a0, a1, w) --  Weight w should be in the range [0.0, 1.0]
+		 return a0 + (a1 - a0) * smoothstep(w)
+	end
+	
+	--  Computes the dot product of the distance and gradient vectors.
+	 function dotGridGradient(ix, iy, x, y)
+	
+	    --  Precomputed (or otherwise) gradient vectors at each grid node
+		-- Retrieve: Gradient[IYMAX][IXMAX][2] = f(table or data)
+	
+	    --  Compute the distance vector
+		dx = x - (float)ix
+		dy = y - (float)iy
+	
+	    --  Compute the dot-product
+		return (dx*Gradient[iy][ix][0] + dy*Gradient[iy][ix][1])
+	end
+	
+	--  Compute Perlin noise at coordinates x, y
+	 function perlin(x, y)
+	
+	    --  Determine grid cell coordinates
+		x0 = floor(x)
+		x1 = x0 + 1
+		y0 = floor(y)
+		y1 = y0 + 1
+	
+	    --  Determine interpolation weights
+	    --  Could also use higher order polynomial/s-curve here
+		sx = x - (float)x0
+		sy = y - (float)y0
+	
+	    --  Interpolate between grid point gradients
+		n0, n1, ix0, ix1, value
+		n0 = dotGridGradient(x0, y0, x, y)
+		n1 = dotGridGradient(x1, y0, x, y)
+		ix0 = interpolate(n0, n1, sx)
+		n0 = dotGridGradient(x0, y1, x, y)
+		n1 = dotGridGradient(x1, y1, x, y)
+		ix1 = interpolate(n0, n1, sx)
+		value = interpolate(ix0, ix1, sy)
+	
+		return value
+	end;
+–––

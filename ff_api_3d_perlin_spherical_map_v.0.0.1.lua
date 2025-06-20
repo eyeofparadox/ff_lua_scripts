@@ -1,3 +1,5 @@
+
+```
 -- 3d perlin spherical map v.0.0.1 - improved perlin noise, distortion power
 function prepare()
  -- constants
@@ -298,9 +300,9 @@ function fromrgb(r, g, b)
 	 return h, s, l or 1
 end
 
-
 function truncate(value)
 	if value <= 0 then value = 0 end
 	if value >= 1 then value = 1 end
 	return value
 end;
+```

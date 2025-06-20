@@ -1,5 +1,21 @@
 -- map script snips and notes.lua
 
+-- weighted average
+	-- opencv (open source computer vision library: http://opencv.org): 
+		-- v = 0.299 * r + 0.587 * g + 0.114 * b
+function ocv_wtd_avg_rgb(r, g, b)
+	local v = 0.299 * r + 0.587 * g + 0.114 * b
+	return v
+end;
+	-- luminosity method: 
+		-- v = 0.2126 * r + 0.7152 * g + 0.0722 * b
+function wtd_avg_rgb(r, g, b)
+	local v = 0.2126 * r + 0.7152 * g + 0.0722 * b
+	return v
+end;
+
+
+-- 
 function prepare()
 	pi, cos, sin = math.pi, math.cos, math.sin
 	aspect = OUTPUT_HEIGHT / OUTPUT_WIDTH * 2

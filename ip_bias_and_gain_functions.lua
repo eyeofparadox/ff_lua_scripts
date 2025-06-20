@@ -112,23 +112,28 @@ end;
 -- the bias function takes in a number between 0 and 1 as input (i like to think of this as the percent) and also takes a number between 0 and 1 as the “tuning parameter” which defines how the function will bend your curve.
 
 function get_bias(t,bias)
-  return (t / ((((1.0/bias) - 2.0)*(1.0 - t))+1.0))
+	return (t / ((((1.0/bias) - 2.0)*(1.0 - t))+1.0))
 end;
 
 
 -- The gain function is like bias in that it takes in both a 0 to 1 input (I think of this as the percent as well) and also takes a number between 0 and 1 as the “tuning parameter”.
 
-function get_gain(t,gain)
--- get_gain makes use of the get_bias function; gain is just bias and reflected bias.
-  if(t < 0.5)
-    return get_bias(t * 2.0,gain)/2.0
-  else
-    return get_bias(t * 2.0 - 1.0,1.0 - gain)/2.0 + 0.5
+function set_bias(t,bias)
+	return (t / ((((1.0/bias) - 2.0)*(1.0 - t))+1.0))
+end;
+
+function set_gain(t,gain)
+-- set_gain makes use of the get_bias function; gain is just bias and reflected bias.
+	if(t < 0.5) then
+		return set_bias(t * 2.0,gain)/2.0
+	else
+		return set_bias(t * 2.0 - 1.0,1.0 - gain)/2.0 + 0.5
+	end
 end;
 
 
 -- contrast curve script
--- this could  technically be a curve ops script, accepting another curve and providing contrast adjustment to it
+-- this could	technically be a curve ops script, accepting another curve and providing contrast adjustment to it
 
 function prepare()
 	eps = 0.000001
@@ -144,14 +149,14 @@ function get_sample(x, y, t)
 	local cs, ce, mn, mx = thr - 0.5, thr + 0.5, 0, 1 
 	
 	-- mn, mx change in response to changes in either br or con
-		mn = mn + br  
+		mn = mn + br	
 		mx = mx - (1 - br)
 	if con < 0.5 and con >= 0 then
-		-- at con <= 0.5, cs, ce =  0, 1;  mn, mx shift to 0, 1. 
+		-- at con <= 0.5, cs, ce =	0, 1;	mn, mx shift to 0, 1. 
 		mn = mn - con 
 		mx = mx + con
 	elseif con >= 0.5 and con <= 1 then
-		-- at con > 0.5, cs, ce shift to 0.5, 0.5;  mn, mx = 0, 1. 
+		-- at con > 0.5, cs, ce shift to 0.5, 0.5;	mn, mx = 0, 1. 
 		mn = mn - con 
 		mx = mx + con
 		-- changes in cs, ce are relative to changes in con 
@@ -164,5 +169,5 @@ function get_sample(x, y, t)
 	local v = get_sample_curve(x, y, t, CURVE)
 	v = v * (-1 * mn + mx) + mn
 
-   return v
+	 return v
 end;

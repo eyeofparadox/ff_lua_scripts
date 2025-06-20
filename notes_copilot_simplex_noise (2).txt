@@ -1,0 +1,84 @@
+Can OpenSimplex be done in Lua?
+
+	Certainly! OpenSimplex noise can indeed be implemented in Lua. Let's explore a bit further.
+
+	OpenSimplex noise is a variant of gradient noise, similar to Perlin or Simplex noise, but with some advantages. It was developed to address patent-related issues surrounding Simplex noise while also avoiding the directional artifacts characteristic of Perlin noise³. In other words, it combines the best of both worlds!
+
+	Here are some relevant resources and implementations you might find interesting:
+
+	1. **OpenSimplex Noise in Lua (Roblox)**:
+	   - There's a community resource on the Roblox Developer Forum that provides a Lua implementation of OpenSimplex noise. It's a translation from Java to Lua and includes both 2D and 3D variants. You can find the full documentation there¹.
+	   - To use it, you'll need to seed the generator first using the `.Seed` function with a number in the interval [-2²⁴, 2²⁴-1].
+	   - The 3D variants are particularly useful for terrain generation and time-varied animations. For example, if Y is vertical in world coordinates, you'd call `noise3_XZBeforeY(x, Y, z)` or `noise3_XZBeforeY(x, Z, y)`¹.
+
+	2. **Simplex Noise Module (Roblox)**:
+	   - While not specifically OpenSimplex, the Simplex Noise Module is another Lua implementation that offers more customization than the standard `math.noise` function in Roblox. It's based on the popularized Simplex Noise algorithm by Ken Perlin².
+
+	3. **GitHub Repositories**:
+	   - There are also open-source implementations of OpenSimplex noise in Lua available on GitHub:
+		- [lmas/opensimplex](https://github.com/lmas/opensimplex): This repository provides an n-dimensional gradient noise function similar to OpenSimplex. It overcomes patent-related issues and avoids directional artifacts seen in Perlin noise³.
+		- [KdotJPG/OpenSimplex2](https://github.com/KdotJPG/OpenSimplex2): While this one is a successor to OpenSimplex noise, it's worth checking out. It includes 2D slices of 3D noise and aims to reduce directional bias compared to the original OpenSimplex⁴.
+
+	Feel free to explore these resources and choose the one that best fits your needs. Lua is a versatile language, and with a little creativity, you can achieve some impressive results in graphics and procedural generation! 😊 If you have any specific use cases or questions, feel free to ask—I'm here to help! 🌟
+
+	Source: Conversation with Copilot, 9/12/2024
+	(1) GitHub - lmas/opensimplex: This repo has been migrated to https://code .... https://github.com/lmas/opensimplex.
+	(2) OpenSimplex Noise in Lua! - Community Resources - Roblox. https://devforum.roblox.com/t/opensimplex-noise-in-lua/1117088.
+	(3) Simplex Noise Module - Community Resources - Developer Forum - Roblox. https://devforum.roblox.com/t/simplex-noise-module/862726.
+	(4) GitHub - KdotJPG/OpenSimplex2: Successors to OpenSimplex Noise, plus .... https://github.com/KdotJPG/OpenSimplex2.
+	
+Can OpenSimplex be extended beyond 3D?
+
+	Certainly! OpenSimplex noise can indeed be extended beyond 3D, and there are some interesting variants that achieve just that. Let's dive into it!
+
+	1. **OpenSimplex2**:
+	   - **Motivation**: OpenSimplex2 was developed as a successor to the original OpenSimplex noise. While the original worked well for common applications, it had some limitations, especially when extended to higher dimensions (5D+). OpenSimplex2 aimed to address these issues.
+	   - **Features**:
+		- **2D, 3D, and 4D Noise**: OpenSimplex2 provides noise functions in 2D, 3D, and 4D.
+		- **Congruent Layouts**: Instead of vertex rearrangement, OpenSimplex2 focuses on congruent layouts constructed and traversed using different methods.
+		- **Improved Gradient Vectors**: The gradient vector tables were revisited to improve probability symmetry in both the old and new noise.
+	   - **Implementation Details**:
+		- In 3D, OpenSimplex2 constructs a rotated body-centered-cubic grid as the offset union of two rotated cubic grids. It then finds the closest two points on each grid.
+		- For 4D, it uses five offset copies of the dual (reverse-skewed) grid to produce the target grid. This technique generalizes to any number of dimensions¹.
+	   - **Variants**:
+		- **OpenSimplex2 (F)**: Looks similar to Simplex noise and is about as fast as common Simplex implementations.
+		- **OpenSimplex2S**: Resembles the 2014 OpenSimplex noise. It has better uniformity in 3D and 4D but still maintains large vertex contribution ranges like the original OpenSimplex.
+		- **Legacy OpenSimplex with Updated Gradients**: If you're using the original OpenSimplex, you can swap in the same noise with the new gradient tables for moderate improvements without changing consistency characteristics or internal frequency¹.
+
+	2. **SuperSimplex**:
+	   - While not directly OpenSimplex, SuperSimplex is worth mentioning. It's an improved gradient noise algorithm that offers better results in certain scenarios.
+	   - In SuperSimplex, the 3D functions are split into two variants:
+		- **noise3_Classic**: Emulates traditional Simplex-style noise.
+		- **noise3_PlaneFirst**: Makes the X/Y plane look better while leaving the third axis (Z) as the vertical direction (terrain) or the time direction (animation)².
+
+	So yes, you can definitely explore OpenSimplex beyond 3D! Whether you choose OpenSimplex2 or SuperSimplex depends on your specific use case and desired characteristics. Have fun experimenting with these noise functions, and feel free to ask if you need further guidance! 🌟🎨
+
+	Source: Conversation with Copilot, 9/12/2024
+	(1) GitHub - KdotJPG/OpenSimplex2: Successors to OpenSimplex Noise, plus .... https://github.com/KdotJPG/OpenSimplex2.
+	(2) SuperSimplex: The Better OpenSimplex? (New Gradient Noise ... - Reddit. https://www.reddit.com/r/VoxelGameDev/comments/ee94wg/supersimplex_the_better_opensimplex_new_gradient/.
+	(3) OpenSimplex2, 4D implementations now available! New, fully ... - Reddit. https://www.reddit.com/r/VoxelGameDev/comments/hm9dir/opensimplex2_4d_implementations_now_available_new/.
+
+___
+
+I.7 : What is OpenSimplex Noise?
+The Coding Train
+https://www.youtube.com/watch?v=Lv9gyZZJPE0&ab_channel=TheCodingTrain
+
+110,358 views  Mar 4, 2019  The Nature of Code
+Simplex Noise (2001) is an improvement on "classic" Perlin noise (1983). I discuss a bit of the history of noise algorithms and show how to use the Java source code for Open Simplex Noise in Processing.
+
+Links discussed in this video: 
+🔗 Perlin Noise: https://en.wikipedia.org/wiki/Perlin_noise
+
+🔗 https://web.archive.org/web/20160530124230/http://freespace.virgin.net/hugo.elias/models/m_perlin.htm
+
+🔗 Gradient Noise: https://en.wikipedia.org/wiki/Gradient_noise
+
+🔗 Simplex Noise: https://en.wikipedia.org/wiki/Simplex_noise
+
+🔗 Simplex noise demystified: http://staffwww.itn.liu.se/~stegu/sim...
+Gustavson Simplex Noise implementations in C and C++, as well as in Java, Lua, and GLSL
+Gustavson Simplex Noise implementations in Lua
+
+🔗 OpenSimplexNoise.java by KdotJPG: https://gist.github.com/KdotJPG/b1270127455a94ac5d19
+🔗 Etienne Jacob:   / necessary-disorder  

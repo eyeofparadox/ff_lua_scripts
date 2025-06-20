@@ -488,7 +488,24 @@ I think the only other concern I had was with making my Worley noise seamless, b
 	Periodicity: You would likely introduce a time dimension (the 4th dimension) that is periodic, ensuring that the noise values repeat smoothly over time.
 	Noise Generation: For periodic noise, you can apply modular arithmetic or trigonometric functions like sine and cosine to ensure the noise repeats over both space and time.
 	If you do decide to go that route and need further assistance, feel free to reach out!
-
+```	
+	function prepare()
+		pi, two_pi, cos, sin = math.pi, math.pi * 2, math.cos, math.sin
+		height, width = OUTPUT_HEIGHT, OUTPUT_WIDTH
+		-- r = get_slider_input(RADIUS)
+	end;
+	
+	function get_sample(x, y)
+	-- option 1: translate origin to 0.5, 0.5
+		x, y = x + 0.5, y + 0.5
+		for i, two_pi do
+		-- hard code radius
+			local r = 500
+			x, y = r * cos(i), r * sin(i)
+			i = i + 0.01
+		end;
+	end;
+```
 Alright, I'll pause this discussion for now and come back when I need to. My thanks for now and I'm sure I'll come chat about other scripting challenges I face.
 
 <<You’ve hit the Free plan limit for GPT-4o. Responses will use another model until your limit resets after 3:08 PM.>>

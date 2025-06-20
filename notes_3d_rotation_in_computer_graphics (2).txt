@@ -1,0 +1,337 @@
+3D Transformations in Computer Graphics
+
+	Transformation is a process of modifying and re-positioning the existing graphics.
+
+	3D Transformations take place in a three dimensional plane.
+
+	In computer graphics, various transformation techniques are
+
+		Translation
+	•	Rotation
+		Scaling
+		Reflection
+		Shear
+
+3D Rotation in Computer Graphics
+
+	3D Rotation is a process of rotating an object with respect to an angle in a three dimensional plane.
+
+	Consider a point object O has to be rotated from one angle to another in a 3D plane.
+
+	Let
+
+		Initial coordinates of the object O
+
+			= (X_old, Y_old, Z_old)
+
+		Initial angle of the object O with respect to origin
+
+			= Φ
+
+		Rotation angle
+
+			= θ
+
+		New coordinates of the object O after rotation
+
+			= (X_new, Y_new, Z_new)
+
+	In 3 dimensions, there are 3 possible types of rotation
+
+		X-axis Rotation
+		Y-axis Rotation
+		Z-axis Rotation
+
+	For X-Axis Rotation
+
+	This rotation is achieved by using the following rotation equations
+
+		X_new = X_old
+		Y_new = Y_old * cos_θ – Z_old * sin_θ
+		Z_new = Y_old * sin_θ + Z_old * cos_θ
+
+	For Y-Axis Rotation
+
+	This rotation is achieved by using the following rotation equations
+
+		X_new = Z_old * sin_θ + X_old * cos_θ
+		Y_new = Y_old
+		Z_new = Y_old * cos_θ – X_old * sin_θ
+
+	For Z-Axis Rotation (Y-axis points up)
+
+	This rotation is achieved by using the following rotation equations
+
+		X_new = X_old * cos_θ – Y_old * sin_θ
+		Y_new = X_old * sin_θ + Y_old * cos_θ
+		Z_new = Z_old
+
+Practice problems based on 3d rotation in computer graphics
+
+	Given a homogeneous point (1, 2, 3). Apply rotation 90 degree towards X, Y and Z axis and find out the new coordinate points.
+
+	Given
+
+		Old coordinates = (X_old, Y_old, Z_old)
+			• = (1, 2, 3)
+
+		Rotation angle = θ
+			• = 90º
+
+	For X-Axis Rotation
+
+	Let the new coordinates after rotation = (X_new, Y_new, Z_new).
+
+	Applying the rotation equations, we have
+
+		X_new = X_old
+			• = 1
+
+		Y_new = Y_old * cos_θ – Z_old * sin_θ
+			• = 2 * cos_90° – 3 * sin_90°
+			• = 2 * 0 – 3 * 1
+			• = -3
+
+		Z_new = Y_old * sin_θ + Z_old * cos_θ
+			• = 2 * sin_90° + 3 * cos_90°
+			• = 2 * 1 + 3 * 0
+			• = 2
+
+		Thus, New coordinates after rotation = (1, -3, 2).
+
+	For Y-Axis Rotation
+
+	Let the new coordinates after rotation = (X_new, Y_new, Z_new).
+
+	Applying the rotation equations, we have
+
+		X_new = Z_old * sin_θ + X_old * cos_θ
+			• = 3 * sin_90° + 1 * cos_90°
+			• = 3 * 1 + 1 * 0
+			• = 3
+
+		Y_new = Y_old
+			• = 2
+
+		Z_new = Y_old * cos_θ – X_old * sin_θ
+			• = 2 * cos_90° – 1 * sin_90°
+			• = 2 * 0 – 1 * 1
+			• = -1
+
+		Thus, New coordinates after rotation = (3, 2, -1).
+
+	For Z-Axis Rotation
+
+	Let the new coordinates after rotation = (X_new, Y_new, Z_new).
+
+	Applying the rotation equations, we have
+
+		X_new = X_old * cos_θ – Y_old * sin_θ
+			• = 1 * cos_90° – 2 * sin_90°
+			• = 1 * 0 – 2 * 1
+			• = -2
+
+		Y_new = X_old * sin_θ + Y_old * cos_θ
+			• = 1 * sin_90° + 2 * cos_90°
+			• = 1 * 1 + 2 * 0
+			• = 1
+
+		Z_new = Z_old
+			• = 3
+
+		Thus, New coordinates after rotation = (-2, 1, 3).
+
+3D Rotation
+
+3D Rotation is more complicated than 2D rotation since we must specify an axis of rotation. In 2D the axis of rotation is always perpendicular to the xy plane, i.e., the Z axis, but in 3D the axis of rotation can have any spatial orientation. For rotation around the three principle axes (X, Y, Z), use the following:
+
+Z-Axis Rotation
+
+Z-axis rotation is identical to the 2D case:
+
+	x' = x*cos q - y*sin q
+	y' = x*sin q + y*cos q
+	z' = z
+
+X-Axis Rotation
+
+X-axis rotation looks like Z-axis rotation if replace:
+
+	X axis with Y axis
+	Y axis with Z axis
+	Z axis with X axis
+
+So we do the same replacement in the equations:
+
+	y' = y*cos q - z*sin q
+	z' = y*sin q + z*cos q
+	x' = x
+
+Y-Axis Rotation
+
+Y-axis rotation looks like Z-axis rotation if replace:
+
+	X axis with Z axis
+	Y axis with X axis
+	Zaxis with Y axis
+
+So we do the same replacement in equations :
+
+	z' = z*cos q - x*sin q
+	x' = z*sin q + x*cos q
+	y' = y
+
+
+Coordinated Rotation of Spheres using Radians and Degrees
+
+	if math.rad(360) == 6.283185482 
+	
+	and 
+	
+	360 * 0.15915494309189533576888376337251 == 57.2957801819 
+	
+	where has the math apparently gone sideways?
+
+In these calculations, there seems to be a slight discrepancy due to rounding errors. The values are approximate representations of the actual values, but they are not exact. To break down the calculations:
+
+	math.rad(360) returns the radian equivalent of 360 degrees. 
+	The actual value is approximately 6.283185307, not 6.283185482. 
+	The difference is due to the limited precision of floating-point arithmetic.
+
+	360 * 0.15915494309189533576888376337251 is an approximation of converting radians to degrees. 
+	The exact conversion factor is 180 / math.pi, which is approximately 57.295779513082320876798154814105. 
+	When 360 is  multiplied by 0.15915494309189533576888376337251, an approximate value of 57.29578018188132 results, which is close to the exact value but not an exact match.
+
+These discrepancies occur due to the limitations of representing real numbers with finite precision in computer calculations. The values previously obtained are very close approximations, but they are not exact due to rounding errors.
+
+If more precise calculations are required, a higher precision library can be used, or adjusting the calculations to minimize the impact of floating-point errors might be considered.
+
+In a Filter Forge map script, higher precision may not be acheivable, but it is still necessary to reconcile two different scripts that both receive input in degrees, but in one the first calculation was used while the other uses the second.
+
+When working with two different scripts that use slightly different calculations for converting between degrees and radians, prioritize one approach and make the necessary adjustments to reconcile the other. Since high precision is not a concern, stick with either of the two approaches depending on individual preference or the script that needs accommodation.
+
+To proceed:
+
+In order to align with the math.rad() and math.deg() functions in Lua's standard library, it's possible to use math.rad() to convert degrees to radians and math.deg() to convert radians to degrees. These functions provide a convenient way to perform the conversions using Lua's built-in functions.
+
+	Example:
+
+	local degrees = 360
+	local radians = math.rad(degrees)  -- Convert degrees to radians
+	print(radians)  -- Output: 6.2831853071796
+	local degrees_again = math.deg(radians)  -- Convert radians to degrees
+	print(degrees_again)  -- Output: 360
+
+If use of the approximate conversion factor of 0.15915494309189533576888376337251 for converting radians to degrees is needed, try to stick with that approach consistently throughout the script.
+
+	Example:
+
+	local radians = 6.283185307  -- Example value in radians
+	local degrees = radians * 57.2957801819  -- Convert radians to degrees
+	print(degrees)  -- Output: 360
+	local radians_again = degrees * 0.01745329252  -- Convert degrees to radians
+	print(radians_again)  -- Output: 6.283185482
+
+Choose one of these approaches and apply it consistently across coordinated scripts to ensure consistency in the conversions between degrees and radians.
+
+When two different components, using the different calculations to drive the rotations of spheres, must synchronize their movement their sin and cosine functions need to be receiving the same values. It is vital to ensure that the input values for the trigonometric functions (sin and cos) are consistent between the two components. In the stated case, the input values are in degrees. So, one of the approaches mentioned above can be used to convert degrees to radians and the resulting radians can be used as the input for the trigonometric functions.
+
+	Here's an example to illustrate the synchronization process:
+
+	-- Component 1 (Using math.rad() and math.sin()/math.cos())
+	local degrees = 90
+	local radians = math.rad(degrees)  -- Convert degrees to radians
+	local sine1 = math.sin(radians)
+	local cosine1 = math.cos(radians)
+
+	-- Component 2 (Using the approximate conversion factor)
+	local degrees2 = 90
+	local radians2 = degrees2 * 0.01745329252  -- Convert degrees to radians using approximate factor
+	local sine2 = math.sin(radians2)
+	local cosine2 = math.cos(radians2)
+
+	-- Synchronize the movement
+
+	-- Use the same sine and cosine values for both components
+	print(sine1, cosine1)  -- Output: 1, 6.1232339957368e-17
+	print(sine2, cosine2)  -- Output: 1, 6.1232339957368e-17
+
+In this example, both components receive an input of 90 degrees, but one component uses math.rad() to convert degrees to radians, while the other component uses the approximate conversion factor 0.01745329252. However, since both components use the resulting radians as input for the trigonometric functions (sin and cos), the output values (sine1, cosine1, sine2, cosine2) are the same, indicating synchronized movement.
+
+By ensuring that the input values for the trigonometric functions are consistent between the two components, movement can be synchronize despite using different calculations for converting degrees to radians.
+
+
+RGB Rotation of Spheres using Degrees and Radians
+
+	local sqrt, min, max, rad, pi = math.sqrt, math.min, math.max, math.rad, math.pi
+	local sin, cos, tan, asin, acos, atan2 = math.sin, math.cos, math.tan, math.asin, math.acos, math.atan2
+
+	--[[
+	rgb channels are used to drive rotations via `normalized`(bounded between 0 and 1) input(or remapped 0°, 
+	360°). existing functions expect rad(degrees) input to initialize sin(), cos() of the angles. an option 
+	to select `normalized` or `degrees` may be appropriate.
+	--]]
+
+	-- variables used in multiple functions
+	local xv, dx, rx, sx, cx, yv, dy, ry, sy, cy, zv, dz, rz, sz, cz
+
+	function prepare()
+	end
+
+	function get_sample(x, y)
+		local r, g, b, a = get_sample_map(x, y, ANGLES_RGB)
+		local xv, dx, rx, sx, cx = initializations(r)
+		local yv, dy, ry, sy, cy = initializations(g)
+		local zv, dz, rz, sz, cz = initializations(b)
+		
+	-- assign rotations via r, g, b channel inputs
+		r, g, b = xv, yv, zv
+		-- then use xv, dx, rx, sx, cx, yv, dy, ry, sy, cy, zv, dz, rz, sz, cz as needed...
+		return r, g, b, 1
+	end
+
+	function initializations(v)
+		local v, d, r, s, c = v, 0, 0, 0, 0
+		d = v * 360
+		r = math.rad(d)
+		s, c  = math.sin(r), math.cos(r)
+		return v, d, r, s, c
+	end
+		-- _v, d_, r_, s_, c_ = initializations(_)
+
+
+Input values are normalized/bounded between 0 and 1, and undergo conversion between degrees and radians for calculations or transformations. Using terms like "normal" or "bounded" to describe values within a specific range can help differentiate them from conversions between different unit systems such as degrees and radians. 
+
+Is there a symbol or character representation for `radians` like `°`?
+
+Yes, there is a symbol commonly used to represent radians. The symbol is a lowercase letter "r" with superscripted "ad" (rad). It is often written as "rad" without any special formatting. However, in some mathematical notations or documents, it might be formatted as "rad" with a superscripted "ad" or as "rad" with a circumflex accent (^) over the "a" (râd).
+
+Here are a few examples:
+	45 degrees = 45°
+	1 radian = 1 rad
+	π/2 radians = π/2 rad or 90°
+
+The choice of representation may vary depending on the context or style guidelines of the document or other notation in use.
+
+Using a map script and `math.` functions in lua might be more compatible with other components in Filter Forge. Take the bounded r, g, b values in the range [0, 1] and convert them to radians before using the sine and cosine math functions:
+
+	1. Convert the bounded values to degrees by scaling them to the range [0, 360].
+
+	local degrees_r = r * 360
+	local degrees_g = g * 360
+	local degrees_b = b * 360
+
+	2. Convert the degrees to radians using math.rad().
+
+	local radians_r = math.rad(degrees_r)
+	local radians_g = math.rad(degrees_g)
+	local radians_b = math.rad(degrees_b)
+
+	3. Use the sine and cosine functions (math.sin() and math.cos()) with the radians values obtained.
+
+	local sine_r = math.sin(radians_r)
+	local cosine_g = math.cos(radians_g)
+	local sine_b = math.sin(radians_b)
+
+Following these steps, the bounded r, g, b values can be converted to radians using math.rad() and then applied to the sine and cosine functions as needed. This approach should work well with other components in Filter Forge that expect values in radians for trigonometric calculations.
+

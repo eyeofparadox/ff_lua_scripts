@@ -1,0 +1,183 @@
+•••
+What is the difference between Screen and  Linear Dodge (in terms of the math behind each blend mode)?
+	• Both Screen and Linear Dodge (also known as Add) are blending modes commonly used to combine layers in software like Photoshop. While they produce similar results—brightening the image—there are subtle differences in their mathematical behavior:
+	1. Screen Blend Mode:
+		Math Behind It: The Screen blend mode inverts both layers, multiplies them, and then inverts the result again.
+		Effect: It lightens the colors of the underlying layer by reducing contrast between the base and blend colors. Essentially, it boosts mid-tones and highlights while preserving shadows.
+		Neutral Color: The neutral color for Screen is black. Any black pixels on a layer become transparent when blended using Screen⁶.
+	2. Linear Dodge (Add) Blend Mode:
+		Math Behind It: Linear Dodge (or Add) is similar to Screen but produces stronger results. It adds the RGB values of the pixels in the blend layer to the corresponding RGB values in the base layer.
+		Effect: It significantly brightens the image, emphasizing highlights and mid-tones. It's often used for intense lighting effects, glows, or to simulate additive light.
+		Neutral Color: The neutral color for Linear Dodge is white. Any white pixels on a layer become transparent when blended using Linear Dodge⁴.
+	3. Practical Use:
+		Screen: Use it for subtle lightening, blending textures, or creating soft glows.
+		Linear Dodge (Add): Use it when you want a stronger effect—like intense highlights or vibrant light sources.
+
+	Source: Conversation with Copilot, 9/6/2024
+	(1) Blend modes - Wikipedia. https://en.wikipedia.org/wiki/Blend_modes.
+	(2) Blending Modes Explained - The Complete Guide to Photoshop Blend Modes. https://photoshoptrainingchannel.com/blending-modes-explained/.
+	(3) The Mathematics of Blend Modes. https://www.youtube.com/watch?v=F7_kaTP7_W4.
+	(4) How 'Add' (or 'Linear Dodge') Blend Mode Works. https://www.youtube.com/watch?v=pz9d90qiJlc.
+	(5) Linear Dodge or Add Blending Mode Explained. Adobe Photoshop tutorials for Beginners. https://www.youtube.com/watch?v=wsxXjA2nJmQ.
+	(6) Blend Modes Explained: The Ultimate Guide to Blending Modes ... - Sickboat. https://sickboat.com/blogs/blog/blend-modes-explained-the-ultimate-guide-to-blending-modes-and-composite-modes.
+	(7) Blending Modes in Photoshop: A Comprehensive Guide. https://petapixel.com/photoshop-blending-modes/.
+	(8) undefined. https://www.patreon.com/FilmmakerIQ.
+
+•••
+Right, I was needing to use Screen with HDR range inputs. Filter Forge does not do that but I can replicate it using Math components.
+	• While Filter Forge might not directly support Screen blending with HDR ranges, your workaround using Math components is a clever approach.
+
+•••
+Next, I need to know about Linear Light vs Linear Dodge or Lighten.
+	• Both of these blending modes play with light and brightness, but they have distinct behaviors:
+	1. Linear Light:
+		Math Behind It: Linear Light combines Linear Burn (for dark pixels) and Linear Dodge (Add) (for light pixels).
+		Effect: When you apply Linear Light, it significantly increases brightness. It's like shining a powerful spotlight on your image.
+		Use Cases:
+		· Intense lighting effects: Think glowing highlights, lens flares, or celestial radiance.
+		· Boosting mid-tones: Linear Light can make your image pop by enhancing the middle range of brightness.
+		Neutral Color: The neutral color for Linear Light is 50% gray. Any pixels with this color won't be affected by the blend mode.
+	2. Linear Dodge (or Lighten):
+		Math Behind It: Linear Dodge (Add) simply adds the RGB values of the blend layer to the corresponding RGB values in the base layer.
+		Effect: It brightens the image by adding light. It's like combining the glow of multiple light sources.
+		Use Cases:
+		· Intense highlights: Use it for specular reflections, glows, or anything that needs to shine.
+		· Combining light sources: Imagine merging the glow of a sunrise with the sparkle of fairy dust.
+		Neutral Color: The neutral color for Linear Dodge is white. Any white pixels on a layer become transparent when blended using Linear Dodge.
+	• In summary:
+	· Linear Light: Powerful and contrast-enhancing.
+	· Linear Dodge (Lighten): Bright and additive.
+
+	Source: Conversation with Copilot, 9/6/2024
+	(1) Blend Modes in Detail: Linear Light. https://www.youtube.com/watch?v=i7IHM2e_j_4.
+	(2) How 'Add' (or 'Linear Dodge') Blend Mode Works. https://www.youtube.com/watch?v=pz9d90qiJlc.
+	(3) Blend Modes in Detail: Linear Light Calculations. https://www.youtube.com/watch?v=12sURzLXnhs.
+	(4) Blending Modes Explained - The Complete Guide to Photoshop Blend Modes. https://photoshoptrainingchannel.com/blending-modes-explained/.
+	(5) Blending Modes: A Complete Guide for Graphic and Web Design. https://www.elegantthemes.com/blog/design/blending-modes.
+	(6) Blending modes in Adobe Photoshop. https://helpx.adobe.com/photoshop/using/blending-modes.html.
+	(7) Blend Modes Explained: The Ultimate Guide to Blending Modes ... - Sickboat. https://sickboat.com/blogs/blog/blend-modes-explained-the-ultimate-guide-to-blending-modes-and-composite-modes.
+	(8) undefined. http://changingminds.org/disciplines/photography.
+	(9) undefined. http://changingminds.org/disciplines/photography/affinity.
+
+•••
+I use them all the time as an artist. I just want to do things the native components or tools of my software don't. It seems I can emulate Linear Light by using a Threshold at 50% with 50% Smoothing?
+	• As an artist, your creative ingenuity knows no bounds! Let's explore how you can achieve an effect similar to Linear Light using a combination of native components. While it won't be an exact match, your workaround with a Threshold at 50% and 50% smoothing is indeed a clever approach.
+	• Here's the breakdown:
+	1. Threshold at 50%:
+		The Threshold component acts like a binary switch. It turns pixels either fully black or fully white based on a specified threshold.
+		When you set the threshold to 50%, it essentially splits your image into two halves: pixels below 50% become black, and pixels above 50% become white.
+	2. Smoothing at 50%:
+		The Smoothing component blurs or softens edges. At 50% smoothing, it gently smooths transitions between adjacent pixels.
+	3. Effect:
+		By combining these two components, you're creating a subtle glow or softening effect. It won't be identical to Linear Light, but it can enhance highlights and create a dreamy atmosphere.
+	• Remember, artistry often involves bending tools to your will, finding unexpected paths, and creating unique effects. Your workaround might just lead to a magical discovery! 
+
+	Source: Conversation with Copilot, 9/6/2024
+	(1) Photoelectric Effect, Work Function, Threshold Frequency, Wavelength, Speed & Kinetic Energy, Electr. https://www.youtube.com/watch?v=-LECEvusk8E.
+	(2) Progress Lighting Gulliver 38.5 in. 4-Light Brushed Nickel Farmhouse Linear Island Chandelier with Weathered Gray Wood Accents P400125-009DI. https://www.homedepot.com/p/Progress-Lighting-Gulliver-38-5-in-4-Light-Brushed-Nickel-Farmhouse-Linear-Island-Chandelier-with-Weathered-Gray-Wood-Accents-P400125-009DI/308868478.
+	(3) 38*70mm indoor LED linear lighting. https://www.youtube.com/watch?v=CGlWPE1yWUg.
+	(4) Lecture 17: Smoothing splines, Local regression, and GAMs. https://web.stanford.edu/~lmackey/stats202/content/lec17-condensed.pdf.
+	(5) 7.5 Smoothing Splines - San Diego State University. https://hscharf.sdsu.edu/teaching/ISLR_chapters/ISLRv2_7_5_7_7.pdf.
+	(6) Lecture 7: Optimal Smoothing - Aalto. https://users.aalto.fi/~ssarkka/course_k2011/pdf/handout7.pdf.
+
+	• Emulating the Linear Light blending mode for HDR sources involves some clever techniques. While it won't be an exact match, I'll guide you through a process that should get you close to the desired effect.
+	1. Understanding Linear Light:
+		Linear Light combines both Linear Dodge (Add) and Linear Burn. It's a powerful mode that significantly increases brightness and contrast.
+		When working with HDR sources, we want to achieve a similar effect by combining the best of both worlds: the additive nature of Linear Dodge and the subtractive nature of Linear Burn.
+	2. Workflow:
+		Here's how you can approach this:
+		· Step 1: Convert SDR Sources to Linear Space:
+			› Transform your SDR (Standard Dynamic Range) sources into linear light. This is easier and more accurate if your sources are scene-referred (as opposed to display-referred).
+			› Use the inverse view transform of ACES or another suitable method to remove the gamma encoding from the SDR sources. Your images should now be in "linear EOTF / Rec. 709 gamut / D65 white point."
+		· Step 2: Add the Linear Values:
+			› Add the linear values of your sources together. Make sure you're using a tool that supports floating-point math (such as Resolve or Nuke).
+		· Step 3: Apply an HDR View Transform:
+			› Finally, apply an HDR view transform (such as PQ or HLG) to the merged linear values.
+			› This step ensures that the final result retains the HDR characteristics.
+	3. Fine-Tuning:
+		Depending on how you derived the linear values, you might need to scale the view transform. SDR sources are often heavily tonemapped, so consider using the inverse of a tonemapping function (like ACES) rather than a simple Rec. 709 to linear conversion.
+		Some trial and error may be necessary to achieve visually pleasing results.
+	• Remember, blend modes are like magical filters for your digital canvas. While this workaround won't perfectly replicate Linear Light, it should get you closer to the desired effect for blending HDR sources. 
+	• Feel free to experiment, tweak, and let your artistic intuition guide you! Even digital alchemists need a little trial and error now and then! 
+
+	Source: Conversation with Copilot, 9/6/2024
+	(1) Combining multiple SDR sources to an HDR composite, live?. https://www.reddit.com/r/blackmagicdesign/comments/zq4ff7/combining_multiple_sdr_sources_to_an_hdr/.
+	(2) Blending Modes: How to Master Film Mattes and Flares. https://www.contentcreatortemplates.com/learn/blending-modes.
+	(3) Linear Light, Gamma, and ACES — Prolost. https://prolost.com/blog/aces.
+
+•••
+Actually, the sources are HDR; I need to blend them together with the emulation of Linear Light.
+	• Got it! Blending HDR sources with an emulation of Linear Light is a fascinating challenge. While it won't be an exact match, I'll guide you through a process that should get you close to the desired effect. Let's dive in:
+	1. Understanding Linear Light:
+		Linear Light combines both Linear Dodge (Add) and Linear Burn. It's a powerful mode that significantly increases brightness and contrast.
+		When working with HDR sources, we want to achieve a similar effect by combining the best of both worlds: the additive nature of Linear Dodge and the subtractive nature of Linear Burn.
+	2. Workflow:
+		Here's how you can approach this:
+		· Step 1: Convert SDR Sources to Linear Space:
+			› Transform your SDR (Standard Dynamic Range) sources into linear light. This is easier and more accurate if your sources are scene-referred (as opposed to display-referred).
+			› Use the inverse view transform of ACES or another suitable method to remove the gamma encoding from the SDR sources. Your images should now be in "linear EOTF / Rec. 709 gamut / D65 white point."
+		· Step 2: Add the Linear Values:
+			› Add the linear values of your sources together. Make sure you're using a tool that supports floating-point math (such as Resolve or Nuke).
+		· Step 3: Apply an HDR View Transform:
+			› Finally, apply an HDR view transform (such as PQ or HLG) to the merged linear values.
+			› This step ensures that the final result retains the HDR characteristics.
+	3. Fine-Tuning:
+		Depending on how you derived the linear values, you might need to scale the view transform. SDR sources are often heavily tonemapped, so consider using the inverse of a tonemapping function (like ACES) rather than a simple Rec. 709 to linear conversion.
+		Some trial and error may be necessary to achieve visually pleasing results.
+	• Remember, blend modes are like magical filters for your digital canvas. While this workaround won't perfectly replicate Linear Light, it should get you closer to the desired effect for blending HDR sources. 
+
+	Source: Conversation with Copilot, 9/6/2024
+	(1) Combining multiple SDR sources to an HDR composite, live?. https://www.reddit.com/r/blackmagicdesign/comments/zq4ff7/combining_multiple_sdr_sources_to_an_hdr/.
+	(2) Blending Modes: How to Master Film Mattes and Flares. https://www.contentcreatortemplates.com/learn/blending-modes.
+	(3) Linear Light, Gamma, and ACES — Prolost. https://prolost.com/blog/aces.
+
+•••
+Let me clarify; I am working in Filter Forge, so I am working with values beyond 0 - 1 limits. The standard Blend component will do Linear Light blending (clamping HDR values). I need to blend the existing values (> 0, 1) together, but the HDR Blend component does not do Linear Light blending.
+	• Thank you for the clarification! Working with HDR values in Filter Forge adds an extra layer of complexity, especially when you need to emulate blending modes like Linear Light. While the native HDR Blend component doesn't directly provide Linear Light blending, we can still achieve a similar effect using a combination of existing components. Let's dive into a workaround:
+	1. Emulating Linear Light in Filter Forge:
+		Since the standard Blend component clamps HDR values, we'll need to create our own custom blend mode that mimics Linear Light behavior.
+		Here's a step-by-step approach:
+	2. Custom Linear Light Blend Mode:
+		Combine the following components to achieve an approximation of Linear Light blending:
+		· Add (Linear Dodge): This component adds the values of your existing layers. It's the additive part of Linear Light.
+		· Subtract (Linear Burn): This component subtracts the values of your existing layers. It's the subtractive part of Linear Light.
+		· Blend (HDR): Use this component to blend the results from the Add and Subtract components.
+		· Fine-Tuning: Adjust the opacity or other parameters to fine-tune the effect.
+	3. Workflow:
+		Convert your existing HDR values to linear space (if they aren't already).
+		Use the Add and Subtract components to mimic Linear Light behavior.
+		Finally, blend the results using the HDR Blend component.
+	4. Experiment and Refine:
+		Since this is an approximation, some trial and error may be necessary. Adjust parameters until you achieve the desired look.
+		Remember that blend modes are like artistic filters—sometimes the magic lies in unexpected combinations!
+	• While it won't be an exact match, this custom blend mode should get you closer to the Linear Light effect for blending HDR values in Filter Forge. 
+
+	Source: Conversation with Copilot, 9/6/2024
+	(1) Filter Forge - HDR pipeline questions. https://www.filterforge.com/forum/read.php?TID=6816.
+	(2) Filter Forge 2.0 Beta - Full HDR Support. https://www.filterforge.com/features/version2/hdr-support.html.
+	(3) Filter Forge Help - Blend (HDR). https://www.filterforge.com/more/help/Components/Processing/BlendHDR2.html.
+	(4) Filter Forge - Blend HDR modes. https://www.filterforge.com/forum/read.php?TID=9584.
+	(5) Make Your Own Photoshop Filters with Filter Forge 2. https://creativepro.com/make-your-own-photoshop-filters-filter-forge-2/.
+	(6) undefined. http://dunnbypaul.net/blends/%29.
+
+•••
+For the third part of Step 2 (Blend (HDR)), am I just using a  Normal blend (essentially just Lerp)? Should I use the 'Foreground' input as the Opacity/Factor?
+	• Let's refine that custom blend mode for emulating Linear Light in Filter Forge. You're on the right track, and I appreciate your patience. 
+	1. Blend (HDR) Component:
+		For this step, you'll use the Blend (HDR) component.
+		The goal is to combine the results from the Add (Linear Dodge) and Subtract (Linear Burn) components.
+	2. Choosing the Blend Mode:
+		You're correct that using a normal blend (essentially a linear interpolation or "Lerp") is appropriate here.
+		Set the Foreground input as the opacity or factor. This will control the balance between the additive and subtractive components.
+	3. Fine-Tuning:
+		Experiment with different opacity values to achieve the desired effect.
+		Remember that blend modes are like artistic spices—subtle adjustments can make a big difference.
+	4. Overall Workflow Recap:
+		Convert your existing HDR values to linear space.
+		Use the Add (Linear Dodge) and Subtract (Linear Burn) components.
+		Blend the results using the Blend (HDR) component with the Foreground input controlling the balance.
+	• Remember, artistry often involves bending tools to your will, finding unexpected paths, and creating unique effects. Your custom blend mode might just lead to a magical discovery! 
+
+•••
+That seems about right. The results are a bit sharper, since there is no clamping. Other than that, the differences are too small to detect with the eye.
+

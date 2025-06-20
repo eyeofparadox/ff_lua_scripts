@@ -1,0 +1,240 @@
+
+'''
+What equation or algorithym would go from 5 to 100 in five expanding steps?
+	• To create an equation or algorithm that goes from 5 to 100 in five expanding steps, you can use a geometric progression. In a geometric progression, each term is found by multiplying the previous term by a constant ratio. Here’s how you can set it up:
+	• Identify the terms:
+		You want to start at 5 and end at 100.
+		You need 5 steps, so you will have 6 terms (including the starting point).
+	• Geometric Progression Formula:
+		The general formula for the ( n )-th term of a geometric progression is:
+				an​=a1​⋅r(n−1)
+		Where:
+			( a_n ) is the ( n )-th term.
+			( a_1 ) is the first term (5 in this case).
+			( r ) is the common ratio.
+			( n ) is the term number.
+	• Calculate the Common Ratio:
+	• You need to find the common ratio ( r ) such that the 6th term is 100.
+		Using the formula for the 6th term:
+			100=5·r^5
+		Solve for ( r ):
+			r^5=100/5=20
+			r=5√20≈1.82
+	• Generate the Sequence:
+		Now that you have the common ratio ( r ≈ 1.82 ), you can generate the terms:
+			( a_1 = 5 )
+			( a_2 = 5 · 1.82 ≈ 9.1 )
+			( a_3 = 9.1 · 1.82 ≈ 16.56 )
+			( a_4 = 16.56 · 1.82 ≈ 30.12 )
+			( a_5 = 30.12 · 1.82 ≈ 54.82 )
+			( a_6 = 54.82 · 1.82 ≈ 100 )
+		So, the sequence from 5 to 100 in five expanding steps is approximately: 5, 9.1, 16.56, 30.12, 54.82, and 100.
+'''
+•••
+Could you give me the formula for this in Lua code?
+	• Here’s a Lua script that calculates the terms of a geometric progression from 5 to 100 in five steps:
+	•••
+		-- Define the initial term and the common ratio
+		local a1 = 5
+		local r = math.pow(20, 1/5)  -- Common ratio calculated as the 5th root of 20
+		-- Function to calculate the n-th term of the geometric progression
+		local function geometric_term(a1, r, n)
+		    return a1 * math.pow(r, n-1)
+		end
+		-- Calculate and print the terms
+		for n = 1, 6 do
+		    local term = geometric_term(a1, r, n)
+		    print(string.format("Term %d: %.2f", n, term)
+		end
+	•••
+	• This script defines the initial term ( a1 ) and calculates the common ratio ( r ). It then uses a function to compute each term of the geometric progression and prints the terms from the first to the sixth (including the starting point).
+	• When you run this script, it will output the terms of the sequence, showing the progression from 5 to 100 in five steps. 
+•••
+Here's what I had to this point:-- Minkowski  distance mapping
+	•••
+		p = get_intslider_input(P)
+		if p > 5 then
+		-- need equation to derive 'p' from 6 - 10 as geometric growth from 5 - 100
+		end
+		function distance (x1, y1, x2, y2)
+			-- dist = math.sqrt((x1-x2)^2+(y1-y2)^2)
+			local pe = 1/p
+			dist = (math.abs(x1 - x2)^p + math.abs(y1 - y2)^p)^pe
+			return dist
+		end
+	•••
+	• Got it! To derive p from 6 to 10 as geometric growth from 5 to 100, you can use the geometric progression formula we discussed earlier. Here’s how you can integrate it into your Lua script:
+	• Calculate the Common Ratio:
+	• The common ratio ( r ) for the geometric progression from 5 to 100 in 5 steps is:
+		r = 5 root 20 ​≈ 1.82 or r = math.pow(20, 5) -- ≈ 1.82 
+	• Update the Lua Script:
+		Use this ratio to calculate the value of p for each step from 6 to 10.
+		Here’s the updated Lua script:
+	•••
+	-- Minkowski distance mapping
+	p = get_intslider_input(P)
+	if p > 5 then
+	    -- Calculate the common ratio for geometric progression
+	    local r = math.pow(20, 1/5)  -- Common ratio
+	    -- Calculate the value of 'p' based on the step
+	    local step = p - 5
+	    p = 5 * math.pow(r, step)
+	end
+	function distance(x1, y1, x2, y2)
+	    -- Minkowski distance calculation
+	    local pe = 1 / p
+	    local dist = (math.abs(x1 - x2)^p + math.abs(y1 - y2)^p)^pe
+	    return dist
+	end
+	•••
+	• In this script:
+		The common ratio ( r ) is calculated as the 5th root of 20.
+		The value of p is adjusted based on the step from 6 to 10 using the geometric progression formula.
+		This should give you the desired geometric growth for p from 5 to 100 in five steps.
+•••
+I wanted to revisit this, creating a more general-purpose Lua script that can be used to list a geometric progression from an initial value to a target value in a specified number of steps. It would run on an online Lua compiler, so I can modify the terms as needed.
+	•••
+	--lua function to calculate the geometric progression
+	function geometric_progression(a1, target, steps)
+	    local r = math.pow(target / a1, 1 / steps)
+	    local sequence = {}
+	    for n = 0, steps do
+		   local an = a1 * math.pow(r, n)
+		   table.insert(sequence, an)
+	    end
+	    return sequence
+	end
+	-- initial value, target value, and number of steps
+	local initial_value = 5
+	local target_value = 100
+	local steps = 5
+	-- calculate the sequence
+	local sequence = geometric_progression(initial_value, target_value, steps)
+	-- print the sequence
+	for i, value in ipairs(sequence) do
+	    print(string.format("a_%d = %.2f", i - 1, value))
+	end
+	•••
+•••
+Great! That works. I was looking for more information  on the added step for the starting point. I assume this corresponds to 0 in the step sequence?
+	• Correct. The added step for the starting point corresponds to n = 0 in the step sequence. So, if your sequence goes from 5 to 100 in 5 steps, the values generated by the Lua script are:
+		•••
+		a_0 = 5 (Initial value)
+		a_1 = 9.10
+		a_2 = 16.56
+		a_3 = 30.12
+		a_4 = 54.82
+		a_5 = 100 (Target value)
+		•••
+	• This means the sequence includes 6 terms in total: the starting point (0) and the 5 steps in between. All set to experiment with more sequences?
+•••
+After additional revisions, the final scriopt is:
+	•••
+	-- Function to calculate the geometric progression
+	function geometric_progression(a1, target, steps)
+	    local r = math.pow(target / a1, 1 / steps)
+	    local sequence = {}
+	    for n = 0, steps do
+		   local an = a1 * math.pow(r, n)
+		   table.insert(sequence, an)
+	    end
+	    return sequence, r
+	end
+	-- Initial value, target value, and number of steps
+	local initial_value = 5
+	local target_value = 100
+	local steps = 5
+	-- Calculate the sequence
+	local sequence, common_ratio = geometric_progression(initial_value, target_value, steps)
+	-- Prepend initial values and steps to the output
+	print(string.format("Initial value = %.2f", initial_value))
+	print(string.format("Target value = %.2f", target_value))
+	print(string.format("Steps = %d", steps))
+	-- Print the sequence
+	for i, value in ipairs(sequence) do
+	    print(string.format("a_%d = %.2f", i - 1, value))
+	end
+	-- Print the common ratio
+	print(string.format("Common ratio = %.2f", common_ratio))
+	•••
+	Output:
+		'''
+		Initial value = 5.00
+		Target value = 100.00
+		Steps = 5
+		a_0 = 5.00
+		a_1 = 9.10
+		a_2 = 16.57
+		a_3 = 30.17
+		a_4 = 54.93
+		a_5 = 100.00
+		Common ratio = 1.82
+		'''
+•••
+I just wish I could remember what I initially needed this for. I was working in Filter Forge when I found I needed the progression used in my post. Unfortunately, the notes I saved don't say what it was for!
+	• Ah, classic case of "forgotten genius moments". If you remember it sparked while using Filter Forge, perhaps it was for adjusting parameters or creating a specific effect? Keep tinkering, it might come back when you least expect it. Until then, you have a neat Lua script ready for when inspiration strikes again! Anything else you’re exploring tonight?
+Based on: 
+	••• [Line 61]
+		-- need equation to derive 'p' from 6 - 10 as geometric growth from 5 - 100
+	•••
+	... the initial requiremet was to generate a 'slider-equivalent' value (5, 100) for the 'int' values of p > 5. The result serves as the adjusted exponent 'p' in the Minkowski distance calculation. For 'p < 6' the value of p is linear (1, 5) while 'p> 5' values of p increase geometrically (in the range of 5[a_0], 100[a_5]). This produces a better transition from 'p==1' to 'p==10' in the distance function shape (triangle @ p==1, circle @ p==2, circle --> square @ p==3 --> p==10).
+	
+•••
+I have to get back to a project (I followed up on this question while I was waiting for a process to finish) so it will be a while before my next question pulls me back here. So, TTFN!
+	• Catch you later! Dive back into your project and smash it out of the park. TTFN—ta ta for now!
+	
+•••
+Is there a proper term or symbol in math to express 'in the range of' in math or coding/scripting?
+	• Yes! In math, you can use interval notation to express ranges. For example, [a, b] means from a to b inclusive, while (a, b) means from a to b exclusive.
+	• In coding or scripting, you might see:
+		< and > to indicate exclusive ranges.
+		<= and >= for inclusive ranges.
+		range(a, b) for a function that generates a range.
+	• Feel free to use these in your equations or scripts! Curious about your next math puzzle or coding challenge?
+
+•••
+Could you elaborate on 'inclusve' vs 'exclusive ranges?
+	• Sure thing! In math and coding, ranges can be either inclusive or exclusive:
+	• Inclusive Ranges: Include the endpoints. For example, [1, 5] means all numbers from 1 to 5, including 1 and 5.
+	• Exclusive Ranges: Exclude the endpoints. For example, (1, 5) means all numbers from just above 1 to just below 5, not including 1 and 5.
+	• Symbols:
+		[a, b]: Inclusive of both a and b.
+		(a, b): Exclusive of both a and b.
+		[a, b): Inclusive of a, exclusive of b.
+		(a, b]: Exclusive of a, inclusive of b.
+	• In coding:
+		range(1, 6) in Python means numbers from 1 to 5 (exclusive of 6).
+			for (int i = 1; i <= 5; i++) in C++ means numbers from 1 to 5 (inclusive of 5).
+	• Hope this clears it up! Anything specific you’re working on with ranges?
+	
+•••
+I was just optimizing some script comments, actually. Can I have the ASCII and or Unicode for the '<=', '>=' characters?
+	• Absolutely. Here you go:
+	• <=:
+		ASCII: There's no direct ASCII code for this.
+		Unicode: U+2264 (≤)
+	• >=:
+		ASCII: No direct ASCII code.
+		Unicode: U+2265 (≥)
+	• These Unicode characters should help jazz up your script comments. Anything else you want to optimize or refine?
+
+•••
+If you use these Unicode characters in a script (Lua in my usual cases) will Filter Forge or an online compiler be able to hande it properly? If not, what is the best/proper way to express 'greater-than-or-equal' and 'less-than-or-equal'?
+	• Most online compilers and scripting environments, including Lua, can handle Unicode characters. However, it's always safest to use ASCII characters to ensure compatibility. For expressing "greater-than-or-equal" and "less-than-or-equal," you can use:
+		<= for "less-than-or-equal"
+		>= for "greater-than-or-equal"
+	• These are universally understood and will avoid any potential issues. Stick with those and you should be golden. 
+	
+•••
+Um, the chat program only shows the Unicode. I should say, what is the proper order of the '<', '>', and '=' ASCII characters in code?
+	• Ah, got it. In code, you should use:
+		<= for "less-than-or-equal"
+		>= for "greater-than-or-equal"
+	• This order is universal and will be understood in any coding or scripting environment, including Lua. 
+	
+•••
+Again, I need it spelled out in text (i.e. '<' or '>' first, '=' second or the other way around?).
+	• Got it. The proper way to express these comparisons is:
+		For "less-than-or-equal," write < first, then =, so <=.
+		For "greater-than-or-equal," write > first, then =, so >=.
+	• Use these in your code, and you’ll be all set. 

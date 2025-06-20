@@ -1,0 +1,511 @@
+
+I've been developing map scripts for Filter Forge, and have something missing from my implementation of spherical Worley noise. Mainly, I am not covering k-nearest-neighbors to produce F2, F3, F4, etc. noise outputs.
+
+	To implement k-nearest-neighbors for spherical Worley noise, enabling you to output F2, F3, F4, etc., here’s a general approach you could follow:
+
+	Step-by-Step Approach:
+	Point Generation:
+
+	For spherical Worley noise, ensure that the points are distributed on the sphere's surface, not in a Euclidean grid. You can use methods like fibonacci lattices or stratified sampling to get evenly distributed points on the sphere.
+	
+	Distance Calculation:
+		Instead of Euclidean distance, you'll need to calculate the great-circle distance or geodesic distance on the sphere. This can be done using the Haversine formula or Vincenty’s formula to compute distances between points on the sphere.
+				Great Circle Distance Formula
+				The greatest circle that may be drawn on the surface of a sphere is the great circle. A great circle is a region of a sphere that encompasses the sphere’s diameter, and also is the shortest distance between any two places on the sphere’s surface. It is also known as the Romanian Circle. 
+				Application of Great Circle
+				The application of the great circle formula is utilized in the navigation of aircraft or ships, which is one of the few instances where it is applied. Because the Earth is spherical, the great circle formula aids navigation by determining the shortest distance within the sphere. 
+				The great circle is the one that shares the centre with the main sphere itself. The diameter of both the sphere and the great circle coincides.
+				Great Circle Formula
+				The great circle formula is given as follows:
+					d = rcos-1[cos a cos b cos(x-y) + sin a sin b]
+				where, 
+					r depicts the earth’s radius, 
+					a and b depict the latitude 
+					while the longitudes are depicted by x and y.
+				Sample Problem
+				Given that the radius of a sphere is 4.7 km, latitude being (45°, 32°) and longitude (24°,17°), find the distance of the great circle.
+				Solution:
+				The great circle formula is given by: d = rcos-1[cos a cos b cos(x-y) + sin a sin b].
+					Given: r = 4.7 km or 4700 m, a, b= 45°, 32° and x, y = 24°,17°.
+				Substituting the values in the above formula, we have:
+					d = 4700 cos-1(0.52 × 0.83 × 0.75) + (0.85 × 0.32)
+					= 4700 × 0.99
+					⇒ d = 4653 m		
+	K-Nearest-Neighbors:
+		When you evaluate the distance from the sample point to the generated points, store distances in an array.
+		Sort the array to get the k-nearest points.
+		F1 is the distance to the nearest point, F2 is the distance to the second-nearest point, and so on for F3, F4, etc.
+	Noise Outputs (F1, F2, F3, etc.):
+		After sorting the distances, your noise output for F1 is the smallest distance, F2 is the second smallest, and so on. You can use these different distance values to generate different textures or effects.
+	Combining F-values:
+		You can combine F1, F2, F3, etc., in various ways depending on the type of noise or texture you want to create. Some variants use weighted sums, differences (F2 - F1), or apply various interpolations between them.
+	Would you like code snippets or further guidance on any of these steps?
+
+This is the script I have currently. What do I need to add to accommodate the usual range of F-type noises (F1, F2, F3, etc.)?
+
+•••
+function prepare()
+	-- v.008.01
+	-- added distance mapping - Euclidean, Manhattan, Chebyshev, Minkowski, Quadratic
+	-- updated with more familiar controls and variables
+	details = get_intslider_input(DETAILS)
+	set_noise_seed(get_intslider_input(SEED))
+	aspect = OUTPUT_HEIGHT / OUTPUT_WIDTH * 2
+	dtype = get_intslider_input(DISTANCE_TYPE)
+	p = get_intslider_input(P)
+	if (get_checkbox_input(HDR)) then
+		hdr = true
+	else
+		hdr = false
+	end
+end;
+
+function get_sample(x, y)
+	local r, g, b, a = get_sample_map(x, y, BACKGROUND)
+	local r2, g2, b2, a2 = get_sample_map(x, y, FOREGROUND)
+	local roughness = 3.75 - get_sample_grayscale(x, y, ROUGHNESS) * 2 + 0.01
+	local contrast = (get_sample_grayscale(x, y, CONTRAST) * 2) - 1
+	local factor = (259 * (contrast + 1)) / (1 * (259 - contrast))
+	local osx, osy,  osz, osa = get_sample_map(x, y, OFFSET)
+	local dx, dy, dz, da = get_sample_map(x, y, DISTORTION)
+	local sx, sy, sz, sa = get_sample_map(x, y, SCALE)
+	sx, sy, sz = sx * sa * 2.5, sy * sa * 2.5, sz * sa * 2.5
+	if sx == 0 then sx = 0.001 end;
+	if sy == 0 then sy = 0.001 end;
+	if sz == 0 then sz = 0.001 end;
+	local amp = 1
+
+	local x = x * aspect * math.pi
+	local y = y * math.pi
+	local nx = math.cos(x) * math.sin(y) + (osx * osa)
+	local ny = math.sin(x) * math.sin(y) + (osy * osa) 
+	local nz = math.cos(y) + (osz * osa)
+	
+	for oct = 1, details do
+		local d1 = get_worley_noise(nx+1,ny,nz,sx,sy,sz) * (dx * da)
+		local d2 = get_worley_noise(nx+2,ny,nz,sx,sy,sz) * (dy * da)
+		local d3 = get_worley_noise(nx+3,ny,nz,sx,sy,sz) * (dz * da)
+		if oct == 1 then v = get_worley_noise(nx+d1,ny+d2,nz+d3,sx,sy,sz) else
+			v = (v + get_worley_noise(nx+d1/oct,ny+d2/oct,nz+d3/oct,sx,sy,sz) * amp ) / (1 + amp)
+		end
+		nz = nz * 2
+		sx, sy, sz = sx / 2, sy / 2, sz / 2
+		amp = amp / roughness
+	end
+	v  = truncate(factor * (v - 0.5) + 0.5)
+	v = get_sample_curve(x,y,v,PROFILE)
+	local opacity = v 
+	r, g, b, a = blend_normal(r, g, b, a, r2, g2, b2, a2, opacity, hdr)
+	return r, g, b, a
+end;
+
+function get_worley_noise(x,y,z,sx,sy,sz)
+	local sx, sy, sz = x / sx , y / sy, z / sz
+	local cell_x, cell_y, cell_z = math.floor(sx), math.floor(sy), math.floor(sz)
+	local offset_x, offset_y, offset_z
+	local min_dist = 10000
+	for offset_x=-1,1 do
+		for offset_y=-1,1 do
+			for offset_z=-1,1 do
+				local dx = cell_x + offset_x + get_noise(cell_x + offset_x, cell_y + offset_y, cell_z + offset_z)
+				local dy = cell_y + offset_y + get_noise(cell_x + offset_x, cell_y + offset_y, cell_z + offset_z)
+				local dz = cell_z + offset_z + get_noise(cell_x + offset_x, cell_y + offset_y, cell_z + offset_z)
+				local dist = distcalc(sx,sy,sz,dx,dy,dz) 
+				min_dist = math.min(dist, min_dist)
+			end
+		end
+	end
+	min_dist = 1.0 - min_dist
+	return min_dist
+end;
+
+function distcalc(sx,sy,sz,dx,dy,dz)
+	local dist = 0
+	if dtype == 1 then
+		-- Euclidean 
+		dist = math.sqrt((sx - dx)^2 + (sy - dy)^2 + (sz - dz)^2)	
+	elseif dtype == 2 then
+		-- Chebyshev
+		dist = math.max(math.abs(sx - dx), math.abs(sy - dy), math.abs(sz - dz))	
+	elseif dtype == 3 then
+		-- Manhattan
+		dist = (math.abs(sx - dx) + math.abs(sy - dy) + math.abs(sz - dz)) / 1.5	
+	elseif dtype == 4 then
+		-- Minkowski 
+		local pe = 1/p
+		dist = (math.abs(sx - dx)^p + math.abs(sy - dy)^p + math.abs(sz - dz)^p)^pe
+	else
+		-- Quadratic
+		dist = ((sx - dx)^2 + (sy - dy)^2 + (sz - dz)^2) / (1 + (sx - dx)^2 + (sy - dy)^2 + (sz - dz)^2)
+	end	
+	return dist
+end;
+
+function truncate(value)
+	if value <= 0 then value = 0 end
+	if value >= 1 then value = 1 end
+	return value
+end;
+•••
+
+	To accommodate multiple F-values (F1, F2, F3, etc.) in your current spherical Worley noise script, you'll need to modify the get_worley_noise function so that it calculates and stores the distances to multiple nearest neighbors, rather than just the minimum distance. Here's a breakdown of what you'll need to adjust:
+
+	Modifications to Implement F1, F2, F3, F4, etc.:
+	Modify get_worley_noise to Track Multiple Nearest Distances: Instead of just tracking the minimum distance (min_dist), maintain a sorted list of the nearest distances. You can use a simple array and sort it after calculating all distances.
+
+	Return Multiple F-values: You'll return the distances for the nearest neighbors in order (F1, F2, F3, etc.). This requires adapting your return value and handling those multiple values in your main function.
+
+	Code Changes:
+	Here's an updated version of get_worley_noise to support multiple F-values:
+
+•••
+function get_worley_noise(x, y, z, sx, sy, sz)
+    local sx, sy, sz = x / sx, y / sy, z / sz
+    local cell_x, cell_y, cell_z = math.floor(sx), math.floor(sy), math.floor(sz)
+    local offset_x, offset_y, offset_z
+    -- Initialize an array to store distances
+    local distances = {}
+
+    for offset_x = -1, 1 do
+	   for offset_y = -1, 1 do
+		  for offset_z = -1, 1 do
+			 local dx = cell_x + offset_x + get_noise(cell_x + offset_x, cell_y + offset_y, cell_z + offset_z)
+			 local dy = cell_y + offset_y + get_noise(cell_x + offset_x, cell_y + offset_y, cell_z + offset_z)
+			 local dz = cell_z + offset_z + get_noise(cell_x + offset_x, cell_y + offset_y, cell_z + offset_z)
+			 local dist = distcalc(sx, sy, sz, dx, dy, dz)
+
+			 -- Insert the calculated distance into the distances array
+			 table.insert(distances, dist)
+		  end
+	   end
+    end
+
+    -- Sort the distances to get nearest neighbors in order
+    table.sort(distances)
+
+    -- Return the F-values (F1 is the nearest, F2 is the second nearest, etc.)
+    local F1 = 1.0 - distances[1]
+    local F2 = 1.0 - distances[2] or 0  -- Ensure a fallback in case fewer neighbors are found
+    local F3 = 1.0 - distances[3] or 0
+    local F4 = 1.0 - distances[4] or 0
+
+    return F1, F2, F3, F4
+end
+•••
+
+	Adjustments to get_sample:
+	You'll need to handle the multiple F-values in the get_sample function. For instance, you can blend or choose between them based on the effect you're aiming for. Here’s an example of how you might use F1 and F2:
+
+•••
+for oct = 1, details do
+    -- Get F1, F2, F3, F4 values from the updated `get_worley_noise` function
+    local F1, F2, F3, F4 = get_worley_noise(nx + 1, ny, nz, sx, sy, sz)
+    
+    -- Use these values however you need, e.g., blend them, use differences (F2 - F1), etc.
+    if oct == 1 then 
+	   v = F1  -- Use F1 for the first octave
+    else
+	   -- Blend subsequent octaves using F1 and F2, for example
+	   v = (v + F1 * amp) / (1 + amp)
+    end
+    
+    -- Update scale and amplitude for next octave
+    nz = nz * 2
+    sx, sy, sz = sx / 2, sy / 2, sz / 2
+    amp = amp / roughness
+end
+•••
+
+	Summary of Changes:
+		Store all distances to nearest neighbors in get_worley_noise and sort them.
+		Return F1, F2, F3, etc. as the closest distances.
+		Use multiple F-values in get_sample for the texture generation.
+	These adjustments should allow you to output the typical range of F-values (F1 through F4) in your spherical Worley noise implementation. Let me know if you'd like further details on how to blend these for different effects!
+	
+Because Filter Forge uses a sample-based rendering architecture, creating large arrays can drastically impact rendering times. I was thinking I would need to minimize this by having the script only store points for the selected k-neighbor (or neighbors, since some popular formulas combine multiple points. Those latter cases would add to the array size, but storing anything not required for a given selection would be a waste. Can you update your example to reflect this? 
+
+	To optimize for Filter Forge's sample-based rendering and minimize the impact of large arrays, you can adjust the code to track only the required k-neighbors without storing unnecessary points. This can be done by keeping a small fixed-size array (or variables) that hold only the distances for the needed k-nearest points, rather than all distances. We will replace the table.insert and full sorting with a more efficient approach.
+
+	Here’s an optimized version that tracks only the needed nearest neighbors (e.g., F1 for single neighbor or F1, F2, etc., for multiple neighbors).
+
+Modified Code for Efficient Neighbor Tracking
+•••
+function get_worley_noise(x, y, z, sx, sy, sz, k)
+    local sx, sy, sz = x / sx, y / sy, z / sz
+    local cell_x, cell_y, cell_z = math.floor(sx), math.floor(sy), math.floor(sz)
+
+    -- Initialize an array to store only the necessary k-nearest distances
+    local nearest_distances = {}
+    for i = 1, k do
+        nearest_distances[i] = 10000  -- Start with a large number
+    end
+
+    for offset_x = -1, 1 do
+        for offset_y = -1, 1 do
+            for offset_z = -1, 1 do
+                local dx = cell_x + offset_x + get_noise(cell_x + offset_x, cell_y + offset_y, cell_z + offset_z)
+                local dy = cell_y + offset_y + get_noise(cell_x + offset_x, cell_y + offset_y, cell_z + offset_z)
+                local dz = cell_z + offset_z + get_noise(cell_x + offset_x, cell_y + offset_y, cell_z + offset_z)
+                local dist = distcalc(sx, sy, sz, dx, dy, dz)
+
+                -- Check if this distance is closer than the farthest one in nearest_distances
+                if dist < nearest_distances[k] then
+                    -- Insert this distance into the appropriate position, shifting others down
+                    for i = k, 1, -1 do
+                        if i == 1 or dist < nearest_distances[i - 1] then
+                            nearest_distances[i] = dist
+                            break
+                        else
+                            nearest_distances[i] = nearest_distances[i - 1]
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- Return only the required k-nearest distances (F1, F2, F3, F4, etc.)
+    local F1 = 1.0 - nearest_distances[1]
+    local F2 = k >= 2 and 1.0 - nearest_distances[2] or 0
+    local F3 = k >= 3 and 1.0 - nearest_distances[3] or 0
+    local F4 = k >= 4 and 1.0 - nearest_distances[4] or 0
+
+    return F1, F2, F3, F4
+end
+•••
+
+	Key Optimizations:
+		Nearest distances tracking: Instead of using a full array for all distances, we maintain an array with just the k smallest distances. We update this array in place as we find new points that are closer.
+		Efficient insertion: When a new closer point is found, it is inserted into the correct position in the nearest distances list, pushing the other elements down. This avoids sorting a larger array.
+		Reduced memory overhead: Only the necessary number of distances is stored, minimizing memory use and improving rendering time.
+		Adjust get_sample to Specify k-nearest-neighbors:
+	You'll want to pass the appropriate k value to control how many nearest neighbors are calculated. For instance, if you want just F1 and F2:
+
+•••
+for oct = 1, details do
+    -- Get F1 and F2 (for k=2) from the optimized `get_worley_noise` function
+    local F1, F2 = get_worley_noise(nx + 1, ny, nz, sx, sy, sz, 2)
+
+    -- Use the F-values as needed for your effect
+    if oct == 1 then 
+        v = F1  -- Use F1 for the first octave
+    else
+        -- Blend using F1 and F2, for example
+        v = (v + F1 * amp) / (1 + amp)
+    end
+
+    -- Update scale and amplitude for next octave
+    nz = nz * 2
+    sx, sy, sz = sx / 2, sy / 2, sz / 2
+    amp = amp / roughness
+end
+•••
+
+	Summary of Adjustments:
+		Track only k nearest distances for the required F-values (F1, F2, etc.).
+		Efficient insertion into a small array rather than sorting all distances.
+		Pass k as an argument to determine how many neighbors are needed, minimizing unnecessary computation.
+	This should give you more control over performance while still allowing for flexible noise output based on selected F-values. Let me know if you need further optimizations or adjustments!
+
+I think I can set the initial array size based on the dimensions  of the current canvas and the relevant noise scaling factors, since that is all information present from the start.
+
+	Setting the array size based on canvas dimensions and scaling factors is a smart optimization approach. This allows you to allocate just enough memory to store the necessary data without overhead from unnecessary array expansions.
+
+	Here's how you can adjust the array initialization for efficiency:
+
+	Steps:
+		Determine Array Size: Calculate the number of points (or distances) needed based on the canvas dimensions and noise scaling factors (like sx, sy, sz).
+		Preallocate Array: Initialize the array with the appropriate size at the start to avoid dynamic resizing during runtime.
+	Example Approach:
+	Let’s assume that the number of points scales with the size of the canvas and the noise scale factors sx, sy, and sz. You can initialize the distance array in prepare based on these values:
+
+•••
+function prepare()
+    -- Set up initial variables
+    details = get_intslider_input(DETAILS)
+    set_noise_seed(get_intslider_input(SEED))
+    aspect = OUTPUT_HEIGHT / OUTPUT_WIDTH * 2
+    dtype = get_intslider_input(DISTANCE_TYPE)
+    p = get_intslider_input(P)
+    sx, sy, sz = get_scale_factors()  -- Function to retrieve scaling factors
+
+    -- Calculate the array size based on canvas dimensions and scale factors
+    local array_size = math.ceil(OUTPUT_WIDTH * OUTPUT_HEIGHT / (sx * sy * sz))
+    
+    -- Initialize the distance array with the computed size
+    distance_array = {}
+    for i = 1, array_size do
+        distance_array[i] = 10000  -- Initialize to a large value
+    end
+
+    -- Additional setup
+    if get_checkbox_input(HDR) then
+        hdr = true
+    else
+        hdr = false
+    end
+end
+•••
+
+	How it Works:
+	Array Size Calculation: The array_size is computed based on the canvas dimensions (OUTPUT_WIDTH and OUTPUT_HEIGHT) and the scale factors (sx, sy, sz). This gives a rough estimate of how many points (or cells) you’ll need to track.
+
+	Preallocated Array: The distance_array is preallocated based on this size. This avoids resizing during noise generation and keeps memory usage predictable.
+	Adjust get_worley_noise:
+	Once the array is preallocated, you can efficiently fill it in get_worley_noise based on the nearest neighbors needed, minimizing the dynamic operations.
+
+•••
+function get_worley_noise(x, y, z, sx, sy, sz, k)
+    -- Scale the coordinates based on noise scale factors
+    local sx, sy, sz = x / sx, y / sy, z / sz
+    local cell_x, cell_y, cell_z = math.floor(sx), math.floor(sy), math.floor(sz)
+
+    -- Use preallocated distance array
+    local nearest_distances = {}
+    for i = 1, k do
+        nearest_distances[i] = 10000  -- Reset to large value for nearest tracking
+    end
+
+    -- Calculate distances and update nearest_distances array
+    -- (as in previous example)
+    -- ...
+
+    -- Return only the required k-nearest distances (F1, F2, etc.)
+    local F1 = 1.0 - nearest_distances[1]
+    local F2 = k >= 2 and 1.0 - nearest_distances[2] or 0
+    local F3 = k >= 3 and 1.0 - nearest_distances[3] or 0
+    local F4 = k >= 4 and 1.0 - nearest_distances[4] or 0
+
+    return F1, F2, F3, F4
+end
+•••
+
+	Advantages:
+		Memory Efficiency: Preallocating the array ensures that memory use is tightly controlled, based on the canvas size and noise scaling.
+		Performance: Avoids dynamic resizing during noise generation, improving rendering speed.
+		Flexibility: By setting the size based on canvas and scaling factors, you ensure it adapts to different resolutions and noise configurations.
+	This method aligns well with your goal of minimizing unnecessary memory use while ensuring efficiency during rendering.
+
+Good. I need to be as efficient as possible, especially if you consider the overhead added by octave layering.
+
+	You're right—octave layering introduces additional overhead, and keeping things efficient becomes even more crucial. Each octave adds more complexity, especially when you’re recalculating noise values and scaling factors at each level.
+
+	To optimize for octave layering, we can focus on several strategies:
+
+	1. Reuse Calculations Across Octaves:
+	Instead of recalculating some values (like scale factors or transformation matrices) for each octave, store and reuse results when possible. This is especially helpful if certain calculations are repeated or scaled versions of earlier ones.
+
+	2. Precompute Noise and Scale Values for Each Octave:
+	Precomputing the scale factors and other transformations for each octave at the start (in the prepare function) can reduce the number of redundant operations during the sample generation phase. You can store the precomputed values in an array for each octave.
+
+	3. Limit the Number of Neighbors per Octave:
+	If a higher number of neighbors (F1, F2, F3) is needed, ensure it only applies where absolutely necessary. For example, some octaves might not need all neighbors, which could reduce computation.
+
+	4. Reduce Detail Dynamically Based on Octave:
+	If rendering times are still high, you could implement a diminishing detail factor for higher octaves, meaning that higher octaves are computed with less precision or fewer neighbors, which can save time without a significant drop in quality.
+
+	Example: 
+
+Optimized Script with Precomputations for Octaves
+•••
+function prepare()
+    -- Precompute scaling factors for each octave based on canvas and noise scale
+    local num_octaves = get_intslider_input(DETAILS)
+    scale_factors = {}
+    
+    local sx, sy, sz = get_scale_factors()  -- Function to retrieve scaling factors
+    for oct = 1, num_octaves do
+        scale_factors[oct] = {sx = sx / (2^(oct-1)), sy = sy / (2^(oct-1)), sz = sz / (2^(oct-1))}
+    end
+
+    -- Initialize the array size based on the canvas and scale
+    local array_size = math.ceil(OUTPUT_WIDTH * OUTPUT_HEIGHT / (sx * sy * sz))
+    distance_array = {}
+    for i = 1, array_size do
+        distance_array[i] = 10000  -- Initialize to large value
+    end
+
+    -- Precompute values that are used across octaves
+    aspect = OUTPUT_HEIGHT / OUTPUT_WIDTH * 2
+    set_noise_seed(get_intslider_input(SEED))
+end
+
+function get_sample(x, y)
+    local r, g, b, a = get_sample_map(x, y, BACKGROUND)
+    local r2, g2, b2, a2 = get_sample_map(x, y, FOREGROUND)
+    
+    -- Precompute initial positions and scale offsets
+    local nx, ny, nz = compute_initial_noise_coordinates(x, y)
+    local roughness = 3.75 - get_sample_grayscale(x, y, ROUGHNESS) * 2 + 0.01
+    local amp = 1
+    local v
+
+    for oct = 1, #scale_factors do
+        local sx, sy, sz = scale_factors[oct].sx, scale_factors[oct].sy, scale_factors[oct].sz
+
+        -- Efficiently compute F1, F2, etc., with minimal array storage
+        local F1, F2 = get_worley_noise(nx + 1, ny, nz, sx, sy, sz, 2)
+
+        if oct == 1 then
+            v = F1  -- Use F1 for the first octave
+        else
+            -- Blend subsequent octaves using F1 and F2
+            v = (v + F1 * amp) / (1 + amp)
+        end
+
+        -- Scale for the next octave, reduce amplitude, and adjust position
+        nx, ny, nz = nx * 2, ny * 2, nz * 2
+        amp = amp / roughness
+    end
+
+    -- Post-process and return the final result
+    return blend_normal(r, g, b, a, r2, g2, b2, a2, v, hdr)
+end
+•••
+
+	Optimizations in This Example:
+	Precompute Scaling Factors: scale_factors for each octave are calculated once in prepare() and reused during noise generation.
+
+	Minimal Array Storage: The distance array is sized appropriately, and only necessary distances for the current octave are computed and stored.
+
+	Reduced Operations in Loop: Instead of recalculating everything in each loop iteration (octave), we reuse precomputed values like the scale factors, minimizing redundant calculations.
+
+	Efficient Blending: The blending between octaves is simplified by using the stored F1 (and F2, F3 if necessary), reducing operations during sample generation.
+
+	Additional Considerations:
+	Dynamic Detail Scaling: For very high detail or resolution, you could reduce the number of octaves or lower the number of nearest neighbors for higher octaves, which helps keep rendering times manageable.
+
+	Parallel Processing: If you’re working with multi-threaded environments, distributing octaves across threads could be another optimization, but this depends on Filter Forge’s threading model.
+
+	By optimizing the script in this way, you'll significantly reduce the overhead introduced by octave layering while maintaining flexibility and quality in your noise generation. Let me know if you need further adjustments!
+
+I think the only other concern I had was with making my Worley noise seamless, but that sort of happens automatically with the equirectangular remapping. I may ask for help with making the noise seamless later, though, if I have to accommodate anything like making the noise animatable--in which case I may need to generate periodic noise in 4D (since this is already 3D noise).
+
+	You're right that with equirectangular remapping, the noise naturally wraps, which helps make it seamless for spherical mapping. If you eventually decide to animate the noise and need to move into 4D, generating periodic noise will indeed be the key to ensuring smooth transitions across frames.
+
+	In 4D Worley noise for animation:
+
+	Periodicity: You would likely introduce a time dimension (the 4th dimension) that is periodic, ensuring that the noise values repeat smoothly over time.
+	Noise Generation: For periodic noise, you can apply modular arithmetic or trigonometric functions like sine and cosine to ensure the noise repeats over both space and time.
+	If you do decide to go that route and need further assistance, feel free to reach out!
+```	
+	function prepare()
+		pi, two_pi, cos, sin = math.pi, math.pi * 2, math.cos, math.sin
+		height, width = OUTPUT_HEIGHT, OUTPUT_WIDTH
+		-- r = get_slider_input(RADIUS)
+	end;
+	
+	function get_sample(x, y)
+	-- option 1: translate origin to 0.5, 0.5
+		x, y = x + 0.5, y + 0.5
+		for i, two_pi do
+		-- hard code radius
+			local r = 500
+			x, y = r * cos(i), r * sin(i)
+			i = i + 0.01
+		end;
+	end;
+```
+Alright, I'll pause this discussion for now and come back when I need to. My thanks for now and I'm sure I'll come chat about other scripting challenges I face.
+
+<<You’ve hit the Free plan limit for GPT-4o. Responses will use another model until your limit resets after 3:08 PM.>>

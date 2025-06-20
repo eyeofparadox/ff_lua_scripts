@@ -1,0 +1,118 @@
+Octaves
+Octaves add depth (or texture) to a noise space. This effect is achieved by layering a base noise layer with its doubling frequencies (octaves) and halving amplitudes with each layer. All layers are then added up, and the amplitude is normalized.
+
+On Each Iteration
+• frequency = FREQUENCY: Increases (typically by a factor of 2.0)
+• amplitude = AMPLITUDE: Decreases (typically by a factor of 0.5)
+• persistence = PERSISTENCE: Rate at which amplitude decreases per octave
+• lacunarity = LACUNARITY: Rate at which frequency increases per octave
+
+Changing these values can drastically alter the terrain's appearance:
+• Increasing the number of octaves increases detail.
+• Higher lacunarity increases detail but can make the terrain less smooth.
+• Higher persistence increases the influence of detail but at the cost of smooth terrain.
+
+Conventionally:
+• Frequency increases exponentially. Linear decrease in amplitude can lead to large spikes.
+• Amplitude decreases exponentially. Linear increase in frequency can cause similar frequencies to add up, forming high hills and valleys.
+
+Code
+–––
+local octaves = 4
+local v, i = 0, 0
+local frequency = 1
+local amplitude = 1
+local lacunarity = 2
+local persistence = 0.5
+
+for i = 0; i < octaves do
+    v = v + get_perlin_noise(x, y, z, frequency) * amplitude
+    -- add octave blending logic
+    frequency = frequency * lacunarity
+    amplitude = amplitude * persistence
+end
+–––
+In Filter Forge
+• roughness = ROUGHNESS: Defines the relative transparency of the octaves. Low roughness results in smoother noise. Higher roughness increases the visibility of smaller-grained octaves.
+• contrast = CONTRAST: Applied to the noise after all octaves are summed but before colors are applied.
+• scale = SCALE: Adjusts the noise scale with respect to the canvas.
+• offset = OFFSET: Used for domain offsetting using internal noise and a color map input. Accepts HDR color and drives XYZ displacement with RGB values.
+• distortion = DISTORTION: Used for domain warping using internal noise and a color map input.
+• details = DETAILS: Sets the number of octaves. For example, 27 means that the first three octaves have full visibility, and the fourth one has 70% visibility.
+• seed = SEED: Provides a random seed, affecting the random aspects of the noise component.
+
+For Reference: Perlin Noise
+Algorithm Perlin noise is used in multiple dimensions and can be defined for any number of dimensions. The algorithm is broken down into three steps:
+1. Grid Definition: Define an n-dimensional grid with random gradient vectors.
+2. Dot Product: Calculate the scalar product between the gradient vector and the distance vector.
+3. Interpolation: Interpolate between these values.
+
+[1] Grid Definition
+Define an n-dimensional grid. Assign a random gradient vector of unit length and dimension n at each grid point (node).
+
+For higher dimensions:
+
+Monte Carlo approach can be used to generate random gradients.
+
+Points outside the unit sphere are rejected, and the remaining points are normalized.
+
+[2] Dot Product
+For each vertex node in the grid cell containing the point, compute the distance vector and the dot product between the gradient vector at the node and the distance vector.
+
+[3] Interpolation
+Interpolate between the 2^n dot products computed at the nodes of the cell containing the argument point. Example in one dimension:
+
+–––
+ƒ(x) = a_0 + smoothstep(x) * (a_1 - a_0) for 0 < x < 1
+–––
+Where smoothstep function is used to ensure smooth transitions.
+
+Pseudo-Code Example (2D Perlin Noise)
+–––
+Gradient = {} -- Normally followed by table initialization
+
+-- Function to transition smoothly from 0.0 to 1.0 in the range [0.0, 1.0]
+function smoothstep(w)
+    if w <= 0.0 then return 0.0 end
+    if w >= 1.0 then return 1.0 end
+    return w * w * (3.0 - 2.0 * w)
+end
+
+-- Function to interpolate smoothly between a0 and a1
+function interpolate(a0, a1, w) -- Weight w should be in the range [0.0, 1.0]
+    return a0 + (a1 - a0) * smoothstep(w)
+end
+
+-- Computes the dot product of the distance and gradient vectors
+function dotGridGradient(ix, iy, x, y)
+    -- Precomputed (or otherwise) gradient vectors at each grid node
+    local dx = x - ix
+    local dy = y - iy
+    return (dx * Gradient[iy][ix][0] + dy * Gradient[iy][ix][1])
+end
+
+-- Compute Perlin noise at coordinates x, y
+function perlin(x, y)
+    -- Determine grid cell coordinates
+    local x0 = math.floor(x)
+    local x1 = x0 + 1
+    local y0 = math.floor(y)
+    local y1 = y0 + 1
+
+    -- Determine interpolation weights
+    local sx = x - x0
+    local sy = y - y0
+
+    -- Interpolate between grid point gradients
+    local n0, n1, ix0, ix1, value
+    n0 = dotGridGradient(x0, y0, x, y)
+    n1 = dotGridGradient(x1, y0, x, y)
+    ix0 = interpolate(n0, n1, sx)
+    n0 = dotGridGradient(x0, y1, x, y)
+    n1 = dotGridGradient(x1, y1, x, y)
+    ix1 = interpolate(n0, n1, sx)
+    value = interpolate(ix0, ix1, sy)
+
+    return value
+end
+–––

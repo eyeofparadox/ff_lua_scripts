@@ -1,0 +1,140 @@
+Spherical Perlin Noise Map Script
+David Bryan Roberson
+https://davidbryanroberson.artstation.com/
+
+The filter contains a Map Script that generates spherically mapped Perlin noise. There is an internal Distortion method, which can be mapped using a grayscale image. HDR values are accepted, but can be overpowering beyond the -1 to 1 range. The same is generally true of the Offsets, which can be used without mapped input to simply search for the perfect noise. Scale is also an HDR value, 0 is fully zoomed in, and zooms out in +/- directions.
+
+At present, my scripting skills are not quite up to providing a FF style noise Roughness control, but as long as you have multiple octaves set, you can control roughness via the Details slider. This component is good for use in texturing balls or planets. Whatever strikes your fancy!
+
+Note: If you connect map inputs, you will want to use spherically mapped images, otherwise you will break the seamlessness that's part of the map script. For convenience, a "companion" map script, with fewer features, is included in the filter.
+
+Note: If you want to connect non-spherically mapped images, you can mask them as shown here. You'll want to use the seamless override or provide tileable images, or the resulting sphere will not be seamless anymore.
+
+spherical, spherically mapped, perin noise, map script
+
+Spherical Worley Cell Noise Map Script
+
+The filter contains a Map Script that generates spherically mapped Worley cell noise. There is an internal Distortion method, which can be mapped using a grayscale image. HDR values are accepted, but can be overpowering beyond the -1 to 1 range. The same is generally true of the Offsets, which can be used without mapped input to simply search for the perfect noise. Scale is also an HDR value, 0 is fully zoomed out and it zooms in in +/- directions.
+
+At present, my scripting skills are not quite up to providing a FF style noise Roughness control, but as long as you have multiple octaves set, you can control roughness via the Details slider. This component is good for use in texturing balls or planets. Whatever strikes your fancy!
+
+Note: If you connect map inputs, you will want to use spherically mapped images, otherwise you will break the seamlessness that's part of the map script. For convenience, a "companion" map script, with fewer features, is included in the filter.
+
+spherical, spherically mapped, worley cell noise, map script
+
+Foreground
+Background
+Roughness
+Contrast
+Offset X
+Offset Y
+Offset Z
+Z Origin
+Distortion
+Scale
+
+Details
+HDR
+	Distance Type
+	P
+Variation
+
+Profile
+
+
+FOREGROUND
+BACKGROUND
+ROUGHNESS
+CONTRAST
+OFFSET_X
+OFFSET_Y
+OFFSET_Z
+Z_COORDINATE
+DISTORTION
+SCALE
+
+DETAILS
+HDR
+	DISTANCE_TYPE
+	P
+SEED
+
+PROFILE
+
+
+Companion Map Script
+
+Distort
+Detail
+Scale
+Octaves
+Seed
+Noise Profile
+
+DISTORT
+DETAIL
+NOISE_SCALE
+NOISE_OCTAVES
+NOISE_SEED
+NOISE_PROFILE
+
+function prepare()
+	oct_max = get_intslider_input(NOISE_OCTAVES)
+	detail = 3.75 - get_slider_input(DETAIL) * 2 + 0.01
+	scale = get_slider_input(NOISE_SCALE) -- * 10 + 1
+	-- distort = get_slider_input(NOISE_DISTORT) *2
+	aspect = OUTPUT_HEIGHT / OUTPUT_WIDTH * 2
+	set_perlin_noise_seed(get_intslider_input(NOISE_SEED))
+end;
+
+function get_sample(x, y)
+	local v = 0
+	local s = 500
+	local amp = 1
+	local x = x * aspect * math.pi
+	local y = y * math.pi
+	local nx = math.cos(x) * math.sin(y) * scale
+	local ny = math.sin(x) * math.sin(y) * scale
+	local nz = math.cos(y) * scale
+	local distort = get_sample_grayscale(x, y, DISTORT)
+	local distortion = get_perlin_noise(nx+OUTPUT_HEIGHT,ny+OUTPUT_WIDTH,nz,s) * distort
+	for oct = 1, oct_max do
+		local d1 = get_perlin_noise(nx+1,ny,nz,s) * distortion
+		local d2 = get_perlin_noise(nx+2,ny,nz,s) * distortion
+		local d3 = get_perlin_noise(nx+3,ny,nz,s) * distortion
+		if oct == 1 then v = get_perlin_noise(nx+d1,ny+d2,nz+d3,s) else
+			v = (v + get_perlin_noise(nx+d1/oct,ny+d2/oct,nz+d3/oct,s) * amp ) / (1 + amp)
+		end
+		nz = nz * 2
+		s = s / 2
+		amp = amp / detail
+	end
+	v = get_sample_curve(x,y,v,NOISE_PROFILE)
+	return v,v,v,1
+end;
+
+Compress Values
+Source	REQUIRED HDR
+Mode
+
+SOURCE
+MODE
+
+function prepare()
+	-- maps -inf to +inf to -1 to +1 
+	-- mode checked maps 0 to 1 range
+	 mode = get_checkbox_input(MODE)
+end;
+
+function get_sample(x, y)
+	local v = get_sample_grayscale(x, y, SOURCE)
+	v = compress(v)
+	if mode then
+		v = v / 2 + 0.5
+	end
+	return v, v, v, 1
+end;
+
+function compress(v)
+	return math.atan (v) * 2  /  math.pi
+end

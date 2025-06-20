@@ -1,0 +1,44 @@
+6.283185307179586476925286766559
+3.1415926535897932384626433832795
+0.31830988618379067153776752674503
+0.15915494309189533576888376337251
+0.07957747154594766788444188168626
+
+The radian, denoted by the symbol rad, is the unit of angle in the International System of Units and is the standard unit of angular measure used in many areas of mathematics. 
+https://en.wikipedia.org/wiki/Radian
+
+It is defined such that one radian is the angle subtended at the centre of a circle by an arc that is equal in length to the radius. 
+
+Inventor: Roger Cotes
+https://sites.unipa.it/grim/Quad18_Kupkova_08.pdf
+
+1 rad in: is equal to:
+
+• degrees: ⁠180/π⁠° ≈ 57.296°
+• gradians: ⁠200/π⁠ grad ≈ 63.662g
+• milliradians: 1000 mrad
+
+Symbol: rad, R
+• turns: ⁠1/2π⁠ turn ≈ 0.159 turn
+
+How many radians are in a rotation?
+• 6.28 radians
+Remember that π≈3.14, so one complete revolution is about 6.28 radians, and one-quarter revolution is 14(2π)=π2, or about 1.57 radians.
+
+To convert radians to rotations, divide the radian measure by 2π, as one full rotation is equivalent to 2π radians; to convert rotations to radians, multiply the number of rotations by 2π. 
+
+Key points: 
+• 1 rotation = 2π radians. 
+
+Conversion formulas: 
+• Radians to rotations: 
+    Rotations = Radians / (2π)
+• Rotations to radians: 
+    Radians = Rotations * (2π) 
+
+Example: 
+• Convert 3π/2 radians to rotations:
+    Rotations = (3π/2) / (2π) = 3/4 rotations
+• Convert 1.5 rotations to radians:
+    Radians = 1.5 * (2π) = 3π 
+

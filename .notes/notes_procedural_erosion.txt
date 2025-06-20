@@ -1,0 +1,77 @@
+Erosion
+
+A key goal for creating a fast-erosion algorithm could be acheived using a modified noise. Worley noises produce part of the desired effect of overlapping heights while Perlin noise produces the desired sort of terrain flow. So, the idea would be to use Perlin noise to influence the distance mapping between the seed points of Worley noise.
+
+Source: Project Frontier #1: Getting Started
+By Shamus
+https://www.shamusyoung.com/twentysidedtale/?p=11874 »
+
+Hills are not shaped like noise. Hills are not usually shaped like domes. (Unless they are small or man-made.) On any kind of respectable scale, erosion has its way with the land and the sides of hills which end up shaped sort of like tree roots. It will have arms that reach out, with steeper sections between them.
+
+The easiest way to achieve this is to run an erosion simulation on it. No, really. Erosion simulation. Just a bit. What you do is this:
+
+1
+	Pass over the map one “pixel” at a time, performing the following process on each space:
+2
+	Drop an imaginary water droplet onto the current space.
+3
+	Now look around, and see which of the neighboring spaces is lowest. Move the droplet to that space.
+4
+	Every time the droplet moves, chip a bit of elevation away from where it was.
+5
+	Once the droplet arrives at a space where it can no longer move down, abandon it and drop the next one. Repeat until you’ve passed over the entire map.
+
+There’s a quality vs. performance cost associated here. It’s better to pass over the map many times, taking only a slight bit of land away with each pass. But if you’re in a hurry, you can run over the whole thing just once and take a bigger chunk away. The land ends up looking a little “jaggy” when you do this. The slow way gives much more realistic erosion shapes.
+
+Simple. Cheap. I’ve done this sort of thing before, and I can say that erosion systems are very prone to oversimulation¹. You CAN write one that takes into account sediment, and the different ways in which rock and dirt erode, and the effect of flowing water on steep slopes as opposed to gradual ones. Likely as not, it will be tough to balance those behaviors well enough to produce useful results, but if you DO manage it, you’ll end up with geography that looks 10% better than the cheapo system I outlined above. If all you need is a bit of topography that can look presentable, then there’s no reason to waste your time and CPU making a deep simulation.
+
+1
+	The key to making a good simulation is knowing when to replicate and when to approximate. Keeping in mind that in a given case it doesn’t (necessarily) need to be right, it just needs to look right.
+	
+	Gravity is the most obvious example of something to replicate. The mathematics behind it are astoundingly obvious and well-known. It wouldn’t save you any time to “approximate” the effects of gravity. Just make everything fall at the correct rate and it will look right.
+	
+	Things can get impossibly complex very fast if you try to replicate everything. A good sense of when to simulate and when to approximate is more important than a deep understanding of physics when it comes to writing a good physics engine. Which is the essence of any 'realistic' simulation.
+	
+	Rather than trying to account for every possiuble variable, identify the critical interaction and use the simplest model of it. Then supplement that with 'characteristic' variables necessary to emulate their influence on the dynamic. This method will be easier to code, less CPU intensive, and will most likely look far more realistic.
+	
+Exetera says:
+Monday Jun 6, 2011 at 6:06 am
+
+	What would a good input data source for an erosion simulator be? Perlin noise? Is there a good way to simulate for road cuts (ie. roads in the side of hills) with this method? Also, why not go back to the Terrain Project code rather than starting with Project Hex?
+
+Shamus says:
+Monday Jun 6, 2011 at 6:19 am
+
+	I’ve found almost anything works as input data, with a few qualifiers:
+
+	* If you’re using a very regular surface (like, spheres or sine waves or something) then add a sprinkle of very mild noise. Using my cheapo shortcuts, a perfect dome will end up being eroded perfectly evenly. The noise will break that up.
+	* The cheap method isn’t smart enough to erode bowl-shaped depressions, so if your input data has lots of craters it won’t be smart enough to fill them in.
+	* It’s not very useful with exceptionally STEEP hills. Sheer cliffs and such won’t really erode very much.
+
+	Other than that, the thing I described above works very well. Given enough passes and a large enough data set, you’ll see “river” valleys and tributaries form.
+
+Peter H. Coffin says:
+Monday Jun 6, 2011 at 10:02 am
+
+	You can probably smarten the simple drop just a little and gain the fill-in you’re looking for by maintaining a counter of the erosions the thing has done and dropping it when the drop evaporates (gets abandoned at the bottom of a depression). Drop some on the hex it stops, eating some to account for leaching and distributing the rest to the surrounding hexes. (25, 15, 60 (10 to each hex)% seems like a good point to start playing.)
+
+Exetera says:
+Monday Jun 6, 2011 at 9:42 pm
+
+	Hmm… I tried to implement an erosion simulator similar to this one, but I seem to mostly be ending up with a lot of very deep, tightly-spaced 1-pixel-wide crevasses and no interesting large changes to the geography. Any suggestions on how not to get that?
+
+krellen says:
+Monday Jun 6, 2011 at 10:24 pm
+
+	Make your erosion size larger than one pixel.
+
+Shamus says:
+Monday Jun 6, 2011 at 11:26 pm
+
+	Hm. Hard to debug via comments, obviously, but here are a few suggestions:
+
+	* Take very small bites. Anything more than a percent is a lot.
+	* Make a copy of the table with each pass. Look at the original values, store the changes in the copied table, then copy them back when you’re done.
+	* When checking neighbors, check all eight, not just the four direct adjacents. (Basically, drops should be able to go diagonal.)
+
+
