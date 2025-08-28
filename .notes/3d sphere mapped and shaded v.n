@@ -1,0 +1,62 @@
+-- 3d sphere mapped and shaded -- <?> 2.24.2023»00:57
+local sqrt, min, max, rad, pi = math.sqrt, math.min, math.max, math.rad, math.pi
+local sin, cos, tan, asin, acos, atan2 = math.sin, math.cos, math.tan, math.asin, math.acos, math.atan2
+
+function prepare()
+	-- inputs and precalculation.
+	aspect = OUTPUT_HEIGHT / OUTPUT_WIDTH * 2
+	head = rad(get_angle_input(HEADING)) - 0.5
+	pitch = rad(get_angle_input(PITCH)) - 0.5
+	bank = rad(get_angle_input(BANK)) - 0.5
+
+	cos_h, sin_h = cos(head), sin(head)
+	cos_p, sin_p = cos(pitch), sin(pitch)
+	cos_b, sin_b = cos(bank), sin(bank)
+
+	if (get_checkbox_input(DISPLAY_MAP)) then
+		display = true
+	else
+		display = false
+	end
+end;
+
+function get_shadow(x, y)
+	local x = x * aspect * math.pi
+	local y = y * math.pi
+	local nx = math.cos(x) * math.sin(y)
+	local ny = math.sin(x) * math.sin(y)
+	-- local nz = math.cos(y)
+	nx = nx * 0.5 + 0.5
+	-- ny = ny * 0.5 + 0.5
+	sh = get_sample_curve(nx, ny, nx, PROFILE)
+	return sh, sh, sh, 1
+end;
+
+function get_sample(x, y)
+	-- Image generation code goes here.
+	local x = x - 0.5
+	local y = y * pi
+	x = x * aspect * pi
+	local nx = cos(x) * sin(y)
+	local ny = sin(x) * sin(y)
+	local nz = cos(y)
+	-- local r, g, b, a = nx, ny, 0, 1
+	local h1, h2 = (nx * cos_h) + (ny * sin_h), (nx * sin_h) - (ny * cos_h)
+	local p1, p2 = (h1 * cos_p) - (cos(y) * sin_p), (h1 * sin_p) + (cos(y) * cos_p)
+	local b1, b2 = (h2 * cos_b) + (p2 * sin_b), (h2 * sin_b) - (p2 * cos_b)
+	nx = atan2(b1, p1) * 0.159155 + 0.5
+	ny = acos(b2) * 0.16 * 2
+	-- local r, g, b, a = p1, p2, 0, 1
+	-- local r, g, b, a = b1, b2, 0, 1
+	if OUTPUT_WIDTH / OUTPUT_HEIGHT == 2 then
+		nx = nx * 2 - 1
+	end
+	local r, g, b, a = nx, ny, 0, 1
+	local sh = get_shadow(x, y)
+	if display then
+		r, g, b, a = get_sample_map(nx, ny, SOURCE)
+	end
+	return r, g, b, a
+end;
+
+--

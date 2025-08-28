@@ -1,0 +1,75 @@
+-- 3d sphere r t p mapped v.1
+	local sqrt, min, max, rad, pi = math.sqrt, math.min, math.max, math.rad, math.pi
+	local sin, cos, tan, asin, acos, atan2 = math.sin, math.cos, math.tan, math.asin, math.acos, math.atan2
+
+function prepare()
+	radius = get_slider_input(RADIUS)
+	persp = get_slider_input(PERSP) * 0.25 * pi
+	s_persp, c_persp = sin(persp), cos(persp)
+	divr, divp = max(1 / radius, 0.0000001), max(1 / s_persp)
+	z_roll = rad(get_angle_input(ROLL))
+	s_z, c_z = sin(z_roll), cos(z_roll)
+	x_tilt = rad(get_angle_input(TILT))
+	s_x, c_x = sin(x_tilt), cos(x_tilt)
+	y_rotation = rad(get_angle_input(ROTATION))
+	s_y, c_y = sin(y_rotation), cos(y_rotation)
+end;
+
+function get_sample(x, y)
+	local r, g, b, a, alpha, rho = 1, 1, 1, 1, 1, 1
+	x, y, alpha, rho = get_sphere(x, y)
+	x, y, z = get_sphere_xyz(x, y)
+	x, y = get_sphere_rtp(x, y)
+	if OUTPUT_WIDTH / OUTPUT_HEIGHT == 2 then x = x * 2 - 1 end;
+	r, g, b, a = get_sample_map(x, y, SOURCE)
+	a = a * alpha
+	return r, g, b, a
+end;
+
+function get_sphere(x, y)
+	x, y = (x * 2.0) - 1.0, (y * 2.0) - 1.0
+	x, y = x * divr, y * divr
+	local alpha, rho = 1, sqrt(x * x + y * y)
+	if rho > 1.0 then alpha = 0 end;
+	local th = atan2(y, x)
+	if persp > 0 then
+		local ph = min(1, rho) * persp
+		local s_ph, c_ph = sin(ph), cos(ph)
+		rho = s_ph * (c_ph * divp - sqrt((c_ph * c_ph - c_persp * c_persp) * divp * divp))
+	else
+		rho = min(1, rho)
+	end;
+	x, y = rho * cos(th), rho * sin(th)
+	return x, y, alpha, rho
+end;
+
+function get_sphere_xyz(x, y)
+	local x, y, z, tx, ty, tz = x, y, 0, 0, 0, 0
+	z = -sqrt(math.max(1.0 - ((x * x)+(y * y)), 0.0000001))
+	tx, ty = (c_z * x) - (s_z * y), (s_z * x) + (c_z * y)
+	x, y = tx, ty-- roll
+	tz, ty = (c_x * z) - (s_x * y), (s_x * z) + (c_x * y)
+	z, y = tz, ty -- tilt
+	tx, tz= (c_y * x) - (s_y * z), (s_y * x) + (c_y * z)
+	x, z = tx, tz -- rotation
+	return x, y, z
+end;
+
+function get_sphere_rtp(x, y)
+	x, y = min(max(x, - 1), 1), - min(max(y, - 1), 1)
+	local ph = asin(y)
+	local th = 0
+	local c_ph = cos(ph)
+	x = min(max(x, - c_ph), c_ph)
+	if c_ph ~=0 then
+		th = asin(x / c_ph)
+	end;
+	return get_theta_phi(th, .5 * pi - ph)
+end;
+
+function get_theta_phi(th, ph)
+	local x, y, z = cos(th) * sin(ph), sin(th) * sin(ph), cos(ph)
+	x, z = x * c_x - z * s_x, x * s_x + z * c_x
+	th, ph = atan2(y, x) + y_rotation, acos(z)
+	return (th / pi + 1) * .5, ph / pi
+end;

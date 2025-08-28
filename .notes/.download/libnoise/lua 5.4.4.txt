@@ -1,0 +1,67 @@
+-- mickledore openembedded-core lua
+lua 5.4.4
+Name
+	lua
+Version
+	5.4.4
+
+Summary
+	
+Description
+	Lua is a powerful light-weight programming language designed for extending applications.
+Section
+	base
+License
+	MIT
+Homepage
+	http://www.lua.org/
+Recipe file
+	recipes-devtools/lua/lua_5.4.4.bb
+Layer
+	openembedded-core (mickledore branch)
+Inherits
+	binconfig
+	multilib_script
+	pkgconfig
+	ptest
+	update-alternatives
+Dependencies 
+	pkgconfig-native
+	readline
+	virtual/i686-oe-linux-compilerlibs
+	virtual/i686-oe-linux-gcc
+	virtual/libc
+	virtual/update-alternatives
+	readline 
+PACKAGECONFIG options
+	readline
+Sources
+	http://www.lua.org/ftp/lua-5.4.4.tar.gz
+	
+Patches
+Patch .. Status
+lua/CVE-2022-28805.patch
+	Backport [https://github.com/lua/lua/commit/1f3c6f4534c6411313361697d98d1145a1f030fa]
+lua/CVE-2022-33099.patch
+	Backport [https://github.com/lua/lua/commit/42d40581dd919fb134c07027ca1ce0844c670daf]
+bbappends
+	This recipe is appended by:
+		meta-montavista-cgx
+			lua_%.bbappend
+
+Other branches
+	This recipe in other branches of openembedded-core:
+
+Branch .. Recipe
+master
+	lua 5.4.7
+scarthgap (Yocto Project 5.0)
+	lua 5.4.6
+nanbield (Yocto Project 4.3)
+	lua 5.4.6
+mickledore (Yocto Project 4.2)
+	lua 5.4.4 (this recipe)
+langdale (Yocto Project 4.1)
+	lua 5.4.4
+kirkstone (Yocto Project 4.0)
+	lua 5.4.4

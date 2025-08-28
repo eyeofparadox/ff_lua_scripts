@@ -1,0 +1,170 @@
+-- 3d sphere shadow v.2
+	-- produces a light shadow mapped to a 3d sphere 
+	local abs, sqrt, min, max, rad, pi = math.abs, math.sqrt, math.min, math.max, math.rad, math.pi;
+	local sin, cos, tan, asin, acos, atan2 = math.sin, math.cos, math.tan, math.asin, math.acos, math.atan2;
+
+function prepare()
+	aspect = OUTPUT_WIDTH / OUTPUT_HEIGHT
+	radius = 1 / get_slider_input(RADIUS)
+	persp = get_slider_input(PERSP) * 0.25 * pi
+	cp, sp = cos_sin(persp)
+	divsp = 1 / sp
+	tilt = rad(get_angle_input(TILT) - 180) -- x axis
+	rotation = rad(get_angle_input(ROTATION)) -- y axis
+	roll = rad(1 - get_angle_input(ROLL) - 181) -- z axis
+	cx, sx, cy, sy, cz, sz = get_cos_sin(rotation, tilt, roll)
+end;
+	--[[
+	radius = 1  / get_slider_input(RADIUS)
+
+	-- tilt & rotation precalc
+	rotation = rad(get_angle_input(ROTATION)) 
+	-- y-axis = yaw
+	cos_y = cos(rotation)
+	sin_y = sin(rotation)
+	
+	tilt = rad(get_angle_input(TILT) - 180) 
+	-- x-axis = pitch
+	cos_x = cos(tilt)
+	sin_x = sin(tilt)
+	
+	roll = - rad(get_angle_input(ROLL) - 181) 
+	-- z-axis = roll
+	sin_z = sin(roll)
+	cos_z = cos(roll)
+	--]]
+
+function get_sample(x, y)
+	local r, g, b, a = get_sample_map(x, y, COLOR)
+	
+	px, py, pz, pv = get_sphere_xyz(x, y, 2)
+
+	px, py, pz = px * 0.5 + 0.5, py * 0.5 + 0.5, pz * 0.5 + 0.5
+	p = get_sample_curve(px, py, pz, PROFILE)
+	r, g, b, a = blend_multiply(r, g, b, a, p, p, p, 1, 1, true)
+
+	return r, g, b, a
+end;
+	--[[
+	-- pz, pz, pz, * 0.5 + 0.25)() ^ 2.5
+	-- return p, p, p, 1 
+	-- return px * 0.5 + 0.5, px * 0.5 + 0.5, px * 0.5 + 0.5, a 
+	-- image generation
+	local px = (x * 2.0) - 1.0
+	local py = (y * 2.0) - 1.0
+	px = px * radius
+	py = py * radius
+	local len = sqrt((px * px)+(py * py))
+	-- if len > 1.0 then return 0, 0, 0, 0 end
+
+	local pz = ((px * px)+(py * py))
+	pz = -sqrt(abs(1.0 - pz))
+
+	-- roll : changes in x and y
+	local tx = (cos_z * px) - (sin_z * py)
+	local ty = (sin_z * px) + (cos_z * py)
+	px = tx
+	py = ty
+
+	-- tilt : changes in y and z
+	local tz = (cos_x * pz) - (sin_x * py)
+	local ty = (sin_x * pz) + (cos_x * py)
+	pz = tz
+	py = ty
+
+	-- rotation : changes in x and z
+	local tx = (cos_y * px) - (sin_y * pz)
+	local tz = (sin_y * px) + (cos_y * pz)
+	px = tx
+	pz = tz
+	--]]
+
+function cos_sin(angle)
+	local cos_angle, sin_angle = cos(angle), sin(angle)
+	return cos_angle, sin_angle
+end;
+
+function get_cos_sin(tilt, rotation, roll)
+	local rotation, tilt, roll = rotation, tilt, roll
+	local cx, sx = cos_sin(tilt)
+	local cy, sy = cos_sin(rotation)
+	local cz, sz = cos_sin(roll)
+	return cx, sx, cy, sy, cz, sz
+end;
+
+function get_perspective(x, y, r)
+	local x, y = x, y
+	local th = atan2(y, x)
+	if persp > 0 then
+		local ph = min(1, r) * persp
+		local s_ph, c_ph = sin(ph), cos(ph)
+		r = s_ph * (c_ph * divsp - sqrt((c_ph * c_ph - cp * cp) * divsp * divsp))
+	else
+		r = min(1, r)
+	end
+	return r * cos(th), r * sin(th)
+end
+
+	--[[
+function get_sphere(x, y)
+	x, y = x * 2 - 1, y * 2 - 1
+	x, y = x * radius, y * radius
+	local alpha, rho = 1, sqrt(x * x + y * y)
+	if rho > 1.0 then alpha = 0 end;
+	x, y =  get_perspective(x, y, rho)
+	local tx, ty, z = (cz_1 * x) - (sz_1 * y), (sz_1 * x) + (cz_1 * y), 0 -- roll
+	x, y = tx, ty
+	x, y, z = rotate_xyz(x, y, rotation_1)
+	return x, y, z, alpha
+end;
+
+function rotate_xyz(x, y, rotation)
+	local x, y, z = min(max(x, - 1), 1), - min(max(y, - 1), 1), 0
+	local ph, th = asin(y), 0
+	local cph = cos(ph)
+	x = min(max(x, - cph), cph)
+	if cph~=0 then th = asin(x / cph) end;
+	ph = .5 * pi - ph
+	x, y, z = cos(th) * sin(ph), sin(th) * sin(ph), cos(ph)
+	x, z = x * cx_1 - z * sx_1, x * sx_1 + z * cx_1 -- tilt
+	th, ph = atan2(y, x) + rotation_1, acos(z) -- rotation
+	th, ph = (th * pi_div + 1) * .5, ph * pi_div
+	th = xratio(th) -- aspect auto-conversion
+	x, y = th, ph
+	return x, y, z
+end;
+
+function xratio(x)
+	if aspect == 2 then
+		x = x * 2 - 1 else x = x
+	end;
+	return x
+end;
+	--]]
+
+function get_sphere_xyz(x, y, i)
+	local x, y, z, tx, ty, tz, alpha, rho, i = x, y, 0, 0, 0, 0, 1, 1, i
+	x, y = (x * 2.0) - 1.0, (y * 2.0) - 1.0
+	x, y = x * radius, y * radius
+	rho = sqrt((x * x)+(y * y))
+	if rho > 1.0 then alpha = 0 end
+	x, y =  get_perspective(x, y, rho)
+	z = -sqrt(abs(1.0 - ((x * x)+(y * y))))
+	tx, ty = (cz * x) - (sz * y), (sz * x) + (cz * y)
+ 	x, y = tx, ty-- roll
+	tz, ty = (cx * z) - (sx * y), (sx * z) + (cx * y)
+ 	z, y = tz, ty -- tilt
+	tx, tz= (cy * x) - (sy * z), (sy * x) + (cy * z)
+ 	x, z = tx, tz -- rotation
+ 	return x, y, z, alpha, rho
+end;
+	-- px, py, pz, alpha, rho = sphere(x, y, rho)
+	--[[
+	if not i or i == 1 then
+		cy, sy, cx, sx, cz, sz = cy_1, sy_1, cx_1, sx_1, cz_1, sz_1
+	elseif i == 2 then
+		cy, sy, cx, sx, cz, sz = cy_2, sy_2, cx_2, sx_2, cz_2, sz_2
+	else
+		cy, sy, cx, sx, cz, sz = cy_3, sy_3, cx_3, sx_3, cz_3, sz_3
+	end	
+	--]]

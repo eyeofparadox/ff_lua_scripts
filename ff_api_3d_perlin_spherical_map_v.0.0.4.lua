@@ -304,7 +304,6 @@ function set_ch_roughness(ch_roughness)
 	return ch_roughness
 end;
 
-
 function fromrgb(r, g, b)
 	local max, min = math.max(r, g, b), math.min(r, g, b)
 	local h, s, l

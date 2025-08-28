@@ -34,7 +34,7 @@ end
 	-- r_atm, g_atm, b_atm, a_atm = get_sample_color(x, y, 0.055, 0.5775, 1.1, 1)
 
 
---[[
+-[[
 	local sqrt, min, max, rad, pi = math.sqrt, math.min, math.max, math.rad, math.pi
 	local sin, cos, tan, asin, acos, atan2 = math.sin, math.cos, math.tan, math.asin, math.acos, math.atan2
 -- prepare

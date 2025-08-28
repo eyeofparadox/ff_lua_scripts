@@ -1,0 +1,29 @@
+{
+  "name": "noisemaker",
+  "version": "0.1.13",
+  "description": "Flimshaw's Tileable Perlin Noise Generator",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": "flimshaw/noisemaker",
+  "author": {
+    "name": "Charlie Hoey",
+    "email": "me@charliehoey.com"
+  },
+  "bin": {
+    "noisemaker": "./index.js"
+  },
+  "license": "MIT",
+  "semistandard": {
+    "ignore": [
+      "**/vendor/**"
+    ]
+  },
+  "dependencies": {
+    "gl": "^4.5.0",
+    "glsl-noise": "0.0.0",
+    "glslify": "^7.0.0",
+    "minimist": "^1.2.5",
+    "pngjs": "^3.3.0"
+  }
+}

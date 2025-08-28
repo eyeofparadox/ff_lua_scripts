@@ -1,0 +1,105 @@
+-- 3d sphere x y z atmosphere, , light and shadow v.1
+	local sqrt, min, max, rad, pi, divp = math.sqrt, math.min, math.max, math.rad, math.pi, 1 / math.pi
+	local sin, cos, tan, asin, acos, atan2 = math.sin, math.cos, math.tan, math.asin, math.acos, math.atan2
+
+function prepare()
+	radius = get_slider_input(RADIUS)
+	persp = get_slider_input(PERSPECTIVE) * .25 * pi
+	s_persp, c_persp = sin(persp), cos(persp)
+	divr, divp = 1 / max(radius, 0.0000001), 1 / max(s_persp, 0.0000001)
+	z_roll = rad(get_angle_input(ROLL))
+	s_z, c_z = sin(z_roll), cos(z_roll)
+	x_tilt = rad(get_angle_input(TILT))
+	s_x, c_x = sin(x_tilt), cos(x_tilt)
+	y_rotation = rad(get_angle_input(ROTATION))
+	s_y, c_y = sin(y_rotation), cos(y_rotation)
+end;
+
+function get_sample(x, y)
+	local r, g, b, a = get_sample_map(x, y, SOURCE)
+	local alpha, rho =  1, 1
+	local r_atm, g_atm, b_atm, a_atm = get_sample_map(x, y, ATMOS)
+	x, y, alpha, rho = get_sphere(x, y)
+	x, y = get_perspective(x, y, rho)
+	local atmos = get_atmos(x, y, alpha, rho)
+	x, y, z = get_sphere_xyz(x, y)
+	x, y, z = x * 0.5 + 0.5, y * 0.5 + 0.5, z * 0.5 + 0.5
+	local v = get_sample_curve(x, y, x, PROFILE)
+	v = v * alpha
+	r, g, b, a = blend_multiply(r, g, b, a, v, v, v, 1,1, true)
+	r, g, b, a = blend_normal(r, g, b, a, r_atm, g_atm, b_atm, atmos, v, true)
+	r, g, b, a = blend_linear_dodge(r, g, b, a, v, v, v, 1, 0.05, true)
+	-- return atmos, atmos, atmos, 1
+	-- return v, v, v, alpha
+	-- return x, x, x, alpha
+	-- return y, y, y, alpha
+	-- return z, z, z, alpha
+	-- return x, y, z, alpha
+	return r, g, b, alpha
+end;
+
+function get_sphere(x, y)
+	local x, y, z, alpha, rh  = x, y, z, 1, 1
+	x, y = (x * 2.0) - 1.0, (y * 2.0) - 1.0
+	x, y = x * divr, y * divr
+	rho = sqrt(x * x + y * y)
+	if rho > 1.0 then alpha = 0 end;
+	return x, y, alpha, rho
+end;
+
+function get_perspective(x, y, r)
+	local x, y = x, y
+	local th = atan2(y, x)
+	if persp > 0 then
+		local ph = min(1, r) * persp
+		local s_ph, c_ph = sin(ph), cos(ph)
+		r = s_ph * (c_ph * divp - sqrt((c_ph * c_ph - c_persp * c_persp) * divp * divp))
+	else
+		r = min(1, r)
+	end
+	return r * cos(th), r * sin(th)
+end
+
+function get_sphere_xyz(x, y)
+	local x, y, z, tx, ty, tz = x, y, 0, 0, 0, 0
+	z = -sqrt(math.max(1.0 - ((x * x)+(y * y)), 0.0000001))
+	tx, ty = (c_z * x) - (s_z * y), (s_z * x) + (c_z * y)
+ 	x, y = tx, ty-- roll
+	tz, ty = (c_x * z) - (s_x * y), (s_x * z) + (c_x * y)
+ 	z, y = tz, ty -- tilt
+	tx, tz= (c_y * x) - (s_y * z), (s_y * x) + (c_y * z)
+ 	x, z = tx, tz -- rotation
+ 	return x, y, z
+end;
+
+function get_atmos(x, y, alpha, rho)
+	local x, y, alpha, rho = x, y, alpha, rho
+	local atmos, phi = 1, min(1, rho)
+	local s_atmos, c_atmos = sin(atmos), cos(atmos)
+	local s_phi, c_phi = sin(phi), cos(phi)
+	rho = s_phi * (c_phi / pi - sqrt((c_phi * c_phi - c_atmos * c_atmos) / (pi ^ 2))) * 10
+	atmos = -sqrt(max(1.0 - ((x * x)+(y * y)), 0.0000001))
+	atmos = (atmos * 0.5 + 0.5) * 2
+	return atmos
+end;
+
+--[[
+function get_sphere_rtp(x, y)
+	x, y = min(max(x, - 1), 1), - min(max(y, - 1), 1)
+	local ph = asin(y)
+	local th = 0
+	local c_ph = cos(ph)
+	x = min(max(x, - c_ph), c_ph)
+	if c_ph ~=0 then
+		th = asin(x / c_ph)
+	end;
+	return get_theta_phi(th, 0.5 * pi - ph)
+end;
+
+function get_theta_phi(th, ph)
+	local x, y, z = cos(th) * sin(ph), sin(th) * sin(ph), cos(ph)
+	x, z = x * c_x - z * s_x, x * s_x + z * c_x
+	th, ph = atan2(y, x) + y_rotation, acos(z)
+	return (th / pi + 1) * 0.5, ph / pi
+end;
+--]]

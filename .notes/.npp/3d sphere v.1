@@ -1,0 +1,94 @@
+-- 3d sphere v.1
+	-- explore option of an angle gradient in the x-axis (around the y-axis)
+	-- explore rendering 3 spheres with offset rotations (120 degrees)
+		-- succeeded in this version, extract hue to obtain an angle gradient
+	-- produces rgb gradient mapped to a 3d sphere with y-axis in the alpha channel 
+function prepare()
+	-- tilt & rotation precalc
+	radius = get_slider_input(RADIUS)
+
+	angle = get_angle_input(ROTATION)
+	angle_r = math.rad(angle)
+	angle_g = math.rad(angle + 240)
+	angle_b = math.rad(angle + 120)
+	cosa_r = math.cos(angle_r)
+	sina_r = math.sin(angle_r)
+	cosa_g = math.cos(angle_g)
+	sina_g = math.sin(angle_g)
+	cosa_b = math.cos(angle_b)
+	sina_b = math.sin(angle_b)
+
+	tilt = math.rad(get_angle_input(TILT))
+	cosa_t = math.cos(tilt)
+	sina_t = math.sin(tilt)
+end;
+
+
+function get_sample(x, y)
+	-- image generation
+	local px = (x*2.0) - 1.0
+	local py = (y*2.0) - 1.0
+	px = px/radius
+	py = py/radius
+	local len = math.sqrt((px*px)+(py*py))
+	if len > 1.0 then return 0,0,0,0 end
+
+	local z = -math.sqrt(1.0 - ((px*px)+(py*py)))
+
+	local tz = (cosa_t * z) - (sina_t * py)
+	local ty = (sina_t * z) + (cosa_t * py)
+	z = tz
+	py = ty
+
+	local tx_r = (cosa_r * px) - (sina_r * z)
+	local tz_r = (sina_r * px) + (cosa_r * z)
+	px_r = tx_r
+	z_r = tz_r
+
+	local tx_g = (cosa_g * px) - (sina_g * z)
+	local tz_g = (sina_g * px) + (cosa_g * z)
+	px_g = tx_g
+	z_g = tz_g
+
+	local tx_b = (cosa_b * px) - (sina_b * z)
+	local tz_b = (sina_b * px) + (cosa_b * z)
+	px_b = tx_b
+	z_b = tz_b
+
+	h,s,l = fromrgb(px_r,px_g,px_b)
+
+	--	input image and map to sphere
+	local r, g, b, a = get_sample_map(h, py/2+0.5, SOURCE)
+
+	-- return h,py/2+.5,0,1
+	-- return px_r/2+.5,px_g/2+.5,px_b/2+.5,py/2+.5 
+	if export then
+		return r, g, b, a
+	else
+		return h,py/2+.5,0,1
+	end;
+end;
+
+function fromrgb(r, g, b)
+	local max, min = math.max(r, g, b), math.min(r, g, b)
+	local h, s, l
+
+	l = (max + min) / 2
+
+	if max == min then
+		h, s = 0, 0 -- achromatic
+	else
+		local d = max - min
+		local s
+		if l > 0.5 then s = d / (2 - max - min) else s = d / (max + min) end
+		if max == r then
+			h = (g - b) / d
+			if g < b then h = h + 6 end
+		elseif max == g then h = (b - r) / d + 2
+		elseif max == b then h = (r - g) / d + 4
+		end
+		h = h / 6
+	end
+
+ return h, s, l or 1
+end

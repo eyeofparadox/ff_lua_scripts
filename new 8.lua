@@ -1,92 +1,96 @@
--- 3d sphere x y z
-	-- produces a light shadow mapped to a 3d sphere
-	local sqrt, min, max, rad, pi, divp = math.sqrt, math.min, math.max, math.rad, math.pi, 1 / math.pi
-	local sin, cos, tan, asin, acos, atan2 = math.sin, math.cos, math.tan, math.asin, math.acos, math.atan2
-
 function prepare()
-	aspect = OUTPUT_HEIGHT / OUTPUT_WIDTH * 2
-	atmos = get_slider_input(ATMOS) * 0.25 * pi
-	s_atmos, c_atmos = sin(atmos), cos(atmos)
-	radius = get_slider_input(RADIUS)
-	divr, divp = max(1 / radius, 0.0000001), max(1 / s_atmos)
-	z_roll = rad(get_angle_input(ROLL))
-	s_z, c_z = sin(z_roll), cos(z_roll)
-	x_tilt = rad(get_angle_input(TILT))
-	c_x, s_x = cos(x_tilt), sin(x_tilt)
-	y_rotation = rad(get_angle_input(ROTATION))
-	s_y, c_y = sin(y_rotation), cos(y_rotation)
+    -- v.002.8.1
+
+    -- Get numeric inputs
+    frequency = get_intslider_input(FREQUENCY) * 100
+    amplitude = math.max(get_slider_input(AMPLITUDE) * 5, 0.01)
+    details = math.max(get_intslider_input(DETAILS) * 0.25, 1)
+    aspect = OUTPUT_HEIGHT / OUTPUT_WIDTH * 2
+    seed = get_intslider_input(SEED)
+
+    -- Get checkbox input
+    if (get_checkbox_input(HDR)) then
+        hdr = true
+    else
+        hdr = false
+    end
 end
 
 function get_sample(x, y)
-	local r, g, b, a, alpha, rho = 1, 1, 1, 1, 1, 1
-	x, y, z, alpha = get_sphere_xyz(x, y)
-	x, y, z = x * 0.5 + 0.5, y * 0.5 + 0.5, z * 0.5 + 0.5
-	v = get_sample_curve(x, y, x, PROFILE)
-	v = v * alpha
-	z = (v * 0.5 + 0.5) * x * alpha
-	r_atm, g_atm, b_atm, a_atm = get_sample_color(x, y, 0.055, 0.5775, 1.1, 1)
-	r, g, b, a = blend_hard_light(x, x, x, alpha, r_atm, g_atm, b_atm, 1, z)
-	return v, v, v, alpha
-	-- return x, x, x, alpha
-	-- return y, y, y, alpha
-	-- return z, z, z, alpha
-	-- return x, y, z, alpha
-	-- return r, g, b, a
+    -- Get map inputs for blend
+    local fr, fg, fb, fa = get_sample_map(x, y, FOREGROUND)
+    local br, bg, bb, ba = get_sample_map(x, y, BACKGROUND)
+
+    -- Get map inputs for noise
+    local roughness = math.max(3.75 - get_sample_grayscale(x, y, ROUGHNESS) * 4.375, 0.01)
+    local contrast = (get_sample_grayscale(x, y, CONTRAST) * 2) - 1
+    local sx, sy, sz, sa = get_sample_map(x, y, SCALE)
+    local ox, oy, oz, oa = get_sample_map(x, y, OFFSET)
+    local dx, dy, dz, da = get_sample_map(x, y, DISTORTION)
+
+    -- Set or adjust internal variables
+    local v, s, amp, factor = 0, frequency, amplitude, (259 * (contrast + 1)) / (1 * (259 - contrast))
+    sx, sy, sz, sa = sx * 1.25, sy * 1.25, sz * 1.25, sa * 1.25
+
+    -- Adjust seeds for each channel
+    local seed_d1 = seed + 100
+    local seed_d2 = seed + 200
+    local seed_d3 = seed + 300
+
+    -- Trigonometric remapping for east-west and north-south seamlessness
+    local longitude = x * aspect * math.pi
+    local latitude = (y - 0.5) * math.pi
+    local nx = math.cos(latitude) * math.cos(longitude) * (sx * sa) + (ox * oa)
+    local ny = math.cos(latitude) * math.sin(longitude) * (sy * sa) + (oy * oa)
+    local nz = math.sin(latitude) * (sz * sa) + (oz * oa)
+
+    -- Local octave generation - if rgb noise required, move to function
+    for oct = 1, details do
+        -- Seed each distortion then restore base seed
+        set_perlin_noise_seed(seed_d1)
+        local d1 = get_perlin_noise(nx, ny, nz, s) * (dx * da)
+        set_perlin_noise_seed(seed_d2)
+        local d2 = get_perlin_noise(nx, ny, nz, s) * (dy * da)
+        set_perlin_noise_seed(seed_d3)
+        local d3 = get_perlin_noise(nx, ny, nz, s) * (dz * da)
+        set_perlin_noise_seed(seed)
+
+        -- Generate octaves 
+        if oct == 1 then
+            v = get_perlin_noise(nx + d1, ny + d2, nz + d3, s)
+        else
+            v = (v + get_perlin_noise(nx + d1 / oct, ny + d2 / oct, nz + d3 / oct, s) * amp) / (1 + amp)
+        end
+
+        -- Update octave parameters for next iteration
+        nz = nz * 2
+        s = s / 2
+        amp = amp / roughness
+    end
+
+    -- Apply contrast and profile adjustments to opacity value `v`
+    v = truncate(factor * (v - 0.5) + 0.5)
+    v = get_sample_curve(x, y, v, PROFILE)
+
+    -- Blend `FOREGROUND` and `BACKGROUND`
+    r, g, b, a = blend_normal(br, bg, bb, ba, fr, fg, fb, fa, v, hdr)
+
+    -- Output to canvas
+    return r, g, b, a
 end
 
-function get_sample_color(x, y, r, g, b, a)
-	local r, g, b, a = x * y * r, x * y * g, x * y * b,  x * y * a
-	return r, g, b, a
-end
-	-- r_, g_, b_, a_ = get_sample_color(x, y, 0.055, 0.5775, 1.1.1, 1)
-
-function get_sphere_xyz(x, y)
-	local x, y, z, tx, ty, tz, alpha, rho = x, y, z, 0, 0, 0, 1, 1
-	x, y = (x * 2.0) - 1.0, (y * 2.0) - 1.0
-	x, y = x * divr, y * divr
-	rho = sqrt((x * x)+(y * y))
-	if rho > 1.0 then alpha = 0 end;
-	z = -sqrt(math.max(1.0 - ((x * x)+(y * y)), 0.0000001))
-	tx, ty = (c_z * x) - (s_z * y), (s_z * x) + (c_z * y)
- 	x, y = tx, ty-- roll
-	tz, ty = (c_x * z) - (s_x * y), (s_x * z) + (c_x * y)
- 	z, y = tz, ty -- tilt
-	tx, tz= (c_y * x) - (s_y * z), (s_y * x) + (c_y * z)
- 	x, z = tx, tz -- rotation
- 	return x, y, z, alpha, rho
+function truncate(value)
+	-- This function ensures that `v` stays normalized within [0, 1]
+	if value <= 0 then value = 0 end
+	if value >= 1 then value = 1 end
+	return value
 end;
 
-function get_atmosphere(x,y)
-	local ph, s_ph, c_ph
-	local th = atan2(y, x)
-	if atmos > 0 then
-		local ph = min(1, rho) * atmos
-		local s_ph, c_ph = sin(ph), cos(ph)
-		rho = s_ph * (c_ph * divp - sqrt((c_ph * c_ph - c_atmos * c_atmos) * divp * divp))
-	else
-		rho = min(1, rho)
-	end
-	rho = s_ph * (c_ph * divp - sqrt((c_ph * c_ph - c_atmos * c_atmos) * divp * divp))
-	x, y = rho * cos(th), rho * sin(th)
-	x, y = get_sphere_rtp(x, y)
- 	return x, y
-end
-
-local function get_theta_phi(th, ph)
-	local x, y, z = cos(th) * sin(ph), sin(th) * sin(ph), cos(ph)
-	x, z = x * c_tilt - z * s_tilt, x * s_tilt + z * c_tilt
-	th, ph = atan2(y, x) + y_rotation, acos(z)
-	return (th / pi + 1) * 0.5, ph / pi
-end
-
-local function get_sphere_rtp(x, y)
-	x, y = min(max(x, - 1), 1), - min(max(y, - 1), 1)
-	local ph = asin(y)
-	local th = 0
-	local c_ph = cos(ph)
-	x = min(max(x, - c_ph), c_ph)
-	if c_ph ~=0 then
-		th = asin(x / c_ph)
-	end
-	return get_theta_phi(th, 0.5 * pi - ph)
+function map(value, start1, stop1, start2, stop2)
+	-- Used to remap range (not currently neccessary, but retained for future use)
+    if stop1 - start1 == 0 then
+        return start2
+    else
+        return start2 + (value - start1) * ((stop2 - start2) / (stop1 - start1))
+    end
 end

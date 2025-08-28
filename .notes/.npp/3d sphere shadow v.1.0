@@ -1,0 +1,191 @@
+-- 3d sphere shadow v.1.0.230602:16:00
+	-- produces a surface mapped 3d sphere 
+	-- produces light and shadow mapped to a 3d sphere 
+	local sqrt, min, max, rad, pi = math.sqrt, math.min, math.max, math.rad, math.pi;
+	local sin, cos, tan, asin, acos, atan2 = math.sin, math.cos, math.tan, math.asin, math.acos, math.atan2;
+
+function prepare()
+	radius = 1  / get_slider_input(RADIUS)
+	per = get_slider_input(PERSP) * 0.25 * pi
+	sp, cp = sin(per), cos(per)
+	sp_div = 1 / sp
+
+	-- tilt & rotation precalc
+	roll_1 = rad(get_angle_input(ROLL_1))-- z axis
+	tilt_1 = rad(get_angle_input(TILT_1))
+	-- x axis
+	rotation_1 = rad(get_angle_input(ROTATION_1))
+	-- y axis
+	cz_1, sz_1, cx_1, sx_1, cy_1, sy_1 = get_cos_sin(roll_1, tilt_1, rotation_1)
+	roll_2 = rad(get_angle_input(ROLL_2))-- z axis
+	tilt_2 = rad(get_angle_input(TILT_2))
+	-- x axis
+	rotation_2 = rad(get_angle_input(ROTATION_2))
+	-- y axis
+	cz_2, sz_2, cx_2, sx_2, cy_2, sy_2 = get_cos_sin(roll_1, tilt_1, rotation_1)
+end;
+
+
+function get_sample(x, y)
+	-- sphere generation
+	spx_1, spy_1, spz_1, rho_1, ph_1, th_1 = get_sphere(x, y)
+	spx_2, spy_2, spz_2, rho_2, ph_2, th_2 = get_sphere(x, y)
+
+	-- sphere manipulation
+	local spx_1, spy_1, spz_1 = rotate_sphere(spx_1, spy_1, spz_1, cy_1, sy_1, cx_1, sx_1, cz_1, sz_1)
+	local spx_2, spy_2, spz_2 = rotate_sphere(spx_2, spy_2, spz_2, cy_2, sy_2, cx_2, sx_2, cz_2, sz_2)
+
+	-- image generation
+	local rho = min(rho_1, rho_2)
+	if rho > 1.0 then return 0, 0, 0, 0 end
+	rho = min(1, rho)
+	px_1, py_1, pz_1 = spx_1 * 0.5 + 0.5, spy_1 * 0.5 + 0.5, spz_1 * 0.5 + 0.5
+	px_2, py_2, pz_2 = spx_2 * 0.5 + 0.5, spy_2 * 0.5 + 0.5, spz_2 * 0.5 + 0.5
+	p_1 = get_sample_curve(px_1, py_1, pz_1 , PROFILE_1)
+	p_2 = get_sample_curve(px_2, py_2, pz_2 , PROFILE_2)
+	-- local r, g, b, a = spx_1, spy_1, spz_1, 1
+	local ir, ig, ib, ia = get_sample_map(px_1, py_1, SOURCE)
+	local gs = 0.2126 * ir + 0.7152 * ig + 0.0722 * ib
+	local r1, g1, b1, a1 = get_sample_map(px_1, py_1, BACKGROUND)
+	local r2, g2, b2, a2 = get_sample_map(px_1, py_1, FOREGROUND)
+	r, g, b, a = blend_normal(r1, g1, b1, a1, r2, g2, b2, a2, p_1, true)
+	r, g, b, a = blend_hard_light(ir, ig, ib, ia, r, g, b, a, 1)
+
+	-- return p_1, p_1, p_1, a
+	-- return p_2, p_2, p_2, a
+	-- return p_1, p_2, 0, a
+	--return rho_1, ph_1, th_1, a
+	-- return spx_1 * 0.5 + 0.5, spx_1 * 0.5 + 0.5, spx_1 * 0.5 + 0.5, a
+	-- return spx_1 * 0.5 + 0.5, spy_1 * 0.5 + 0.5, spz_1 * 0.5 + 0.5, a
+	return r, g, b, a
+end;
+
+
+function get_cos_sin(roll, tilt, rotation)
+	cz, sz = cos(roll), sin(roll)
+	-- z-axis
+	cx, sx = cos(tilt), sin(tilt)
+	-- x-axis
+	cy, sy = cos(rotation), sin(rotation)
+	-- y-axis
+	return cz, sz, cx, sx, cy, sy
+end;
+
+
+--[[
+	x, y = x * 2 - 1, y * 2 - 1;
+	x = x / radius
+	y = y / radius
+	local r = sqrt(x * x + y * y);
+	if r > 1.0 then return 0, 0, 0, 0 end
+	local th = atan2(y, x);
+	if persp > 0 then
+		local ph = min(1, r) * persp;
+		local sin_ph, cos_ph = sin(ph), cos(ph);
+		r = sin_ph * (cos_ph / sin_persp - sqrt((cos_ph * cos_ph - cos_persp * cos_persp) / sin_persp / sin_persp));
+	else
+		r = min(1, r);
+	end;
+	x, y = r * cos(th), r * sin(th);
+	-- roll : changes in x and y
+	local tx = (cos_roll * x) - (sin_roll * y)
+	local ty = (sin_roll * x) + (cos_roll * y)
+	x = tx
+	y = ty
+	x, y = get_sphere(x, y);
+]]
+local function get_sphere_th_ph(th, ph)
+	local x, y, z = cos(th) * sin(ph), sin(th) * sin(ph), cos(ph);
+	x, z = x * cos_tilt - z * sin_tilt, x * sin_tilt + z * cos_tilt;
+	th, ph = atan2(y, x) + rotation, acos(z);
+	return (th / pi + 1) * .5, ph / pi;
+end;
+
+local function get_sphere(x, y)
+	x, y = min(max(x, - 1), 1), - min(max(y, - 1), 1);
+	local ph = asin(y);
+	local th = 0
+	local cos_ph = cos(ph);
+	x = min(max(x, - cos_ph), cos_ph);
+	if cos_ph~=0 then
+		th = asin(x / cos_ph);
+	end;
+	return get_sphere_th_ph(th, .5 * pi - ph);
+end;
+
+
+function get_sphere(x, y)
+	-- sphere generation
+	local x, y = x * 2 - 1, y * 2 - 1
+	x, y = x * radius, y * radius
+	local rho = sqrt((x * x)+(y * y))
+	local th, ph = atan2(y, x), 0
+	if per > 0 then
+		ph = min(1, rho) * per
+		local h, cph = sin(ph), cos(ph)
+		rho = h * (cph* _div - sqrt((cph * cph - cp * cp)* _div* _div))
+	end;
+	px, py = rho * cos(th), rho * sin(th)
+	local z = -sqrt(1.0 - ((x * x)+(y * y)))
+	return x, y, z, rho, ph, th
+end;
+
+
+function rotate_sphere(x, y, z, cy, sy, cx, sx, cz, sz)
+	x, y = rotate_z(x, y, z)
+	-- roll
+	z, y = rotate_x(x, y, z)
+	-- tilt
+	x, z = rotate_y(x, y, z)
+	-- rotation
+	return x, y, z
+end;
+
+
+function rotate_z(x, y, z)
+	-- z-axis
+	-- roll
+	local tx, ty = (cz * x) - (sz * y), (sz * x) + (cz * y)
+	x, y = tx, ty
+	return x, y
+end;
+
+
+function rotate_x(x, y, z)
+	-- x-axis
+	-- tilt
+	local tz, ty = (cx * z) - (sx * y), (sx * z) + (cx * y)
+	z, y = tz, ty
+	return z, y
+end;
+
+
+function rotate_y(x, y, z)
+	-- y-axis
+	-- rotation
+	local tx, tz= (cy * x) - (sy * z), (sy * x) + (cy * z)
+	x, z = tx, tz
+	return x, z
+end;
+
+
+function sphere(x, y, rho)
+	local x, y, z, tx, ty, tz, alpha, rho = x, y, 0, 0, 0, 0, 1, rho
+	x, y = (x * 2.0) - 1.0, (y * 2.0) - 1.0
+	x, y = x * radius, y * radius
+	rho = sqrt((x * x)+(y * y))
+	if rho > 1.0 then alpha = 0 end
+	z = -sqrt(1.0 - ((x * x)+(y * y))) 
+	tx, ty = (cos_z * x) - (sin_z * y), (sin_z * x) + (cos_z * y)
+ 	x, y = tx, ty-- roll
+ 	tz, ty = (cos_x * z) - (sin_x * y), (sin_x * z) + (cos_x * y)
+ 	z, y = tz, ty
+	-- tilt
+ 	tx, tz = (cos_y * x) - (sin_y * z), (sin_y * x) + (cos_y * z)
+ 	x, z = tx, tz
+	-- rotation
+ 	return x, y, z, alpha, rho
+end;
+	-- px, py, pz, alpha, rho = sphere(x, y, rho)
+
+
